@@ -62,6 +62,9 @@ const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogIm
     <!-- JSON-LD -->
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3705985032450985" crossorigin="anonymous"></script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
