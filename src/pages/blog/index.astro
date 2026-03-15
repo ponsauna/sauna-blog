@@ -12,7 +12,7 @@ const posts = (await getCollection('blog')).sort(
 const categories = [...new Set(posts.map((post) => post.data.category))];
 ---
 
-<BaseLayout title="ブログ一覧 | My Blog" description="すべてのブログ記事">
+<BaseLayout title="ブログ一覧 | Sauna Pon Blog" description="すべてのブログ記事">
   <Header slot="header" />
 
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
