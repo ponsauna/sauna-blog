@@ -1,0 +1,36 @@
+---
+const navLinks = [
+  { href: '/', label: 'HOME' },
+  { href: '/blog', label: 'BLOG' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/10">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2 group">
+        <span class="text-2xl">🧖</span>
+        <span class="text-lg font-bold text-white tracking-wider group-hover:text-amber-400 transition-colors">
+          SAUNA LOG
+        </span>
+      </a>
+      <nav class="flex gap-8">
+        {navLinks.map(({ href, label }) => (
+          <a
+            href={href}
+            class:list={[
+              'text-xs font-semibold tracking-widest transition-colors',
+              currentPath === href
+                ? 'text-amber-400'
+                : 'text-gray-400 hover:text-white',
+            ]}
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
+</header>

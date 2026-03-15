@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import BlogCard from '../../components/BlogCard.astro';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+
+const categories = [...new Set(posts.map((post) => post.data.category))];
+---
+
+<BaseLayout title="ブログ一覧 | My Blog" description="すべてのブログ記事">
+  <Header slot="header" />
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">ブログ</h1>
+      <p class="text-gray-500">全 {posts.length} 件の記事</p>
+    </div>
+
+    {categories.length > 0 && (
+      <div class="flex flex-wrap gap-2 mb-10">
+        <span class="text-sm font-medium text-gray-700 self-center">カテゴリ:</span>
+        {categories.map((cat) => (
+          <span class="text-sm px-3 py-1 bg-gray-100 text-gray-600 rounded-full">
+            {cat}
+          </span>
+        ))}
+      </div>
+    )}
+
+    {posts.length > 0 ? (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => (
+          <BlogCard
+            slug={post.slug}
+            title={post.data.title}
+            date={post.data.date}
+            category={post.data.category}
+            coverImage={post.data.coverImage}
+            excerpt={post.data.excerpt}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="text-center text-gray-500 py-12">まだ記事がありません。</p>
+    )}
+  </div>
+
+  <Footer slot="footer" />
+</BaseLayout>
