@@ -1,0 +1,28 @@
+name: 月次経費同期
+
+on:
+  schedule:
+    # 毎月1日の朝9時（JST）に自動実行
+    - cron: '0 0 1 * *'
+  # 手動実行も可能
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 依存パッケージをインストール
+        run: npm install googleapis
+
+      - name: Drive → Sheets 経費同期
+        run: node scripts/sync-expenses.mjs
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SPREADSHEET_ID: ${{ secrets.GOOGLE_SPREADSHEET_ID }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}

@@ -5,5 +5,10 @@
       "destination": "/blog/:slug",
       "permanent": true
     }
-  ]
+  ],
+  "functions": {
+    "api/webhook.js": {
+      "maxDuration": 60
+    }
+  }
 }
