@@ -136,9 +136,10 @@ export default async function handler(req, res) {
       }
     }
 
-    // ¥1,500 や 1500円 のような金額を抽出
-    const amountMatch = ocrText.match(/[¥￥][\d,]+|[\d,]+円/);
-    const rawAmount = amountMatch ? amountMatch[0].replace(/[¥￥円,]/g, '') : '';
+    // ¥1,500 や 1500円 のような金額を全部抽出して最大値（合計）を使う
+    const amountMatches = ocrText.match(/[¥￥][\d,]+|[\d,]+円/g) || [];
+    const amounts = amountMatches.map(m => parseInt(m.replace(/[¥￥円,]/g, '')));
+    const rawAmount = amounts.length > 0 ? Math.max(...amounts).toString() : '';
     const displayAmount = rawAmount ? `¥${parseInt(rawAmount).toLocaleString()}` : '不明';
 
     // ── 3. Google Sheets に経費を記録 ────────────────────────────────
