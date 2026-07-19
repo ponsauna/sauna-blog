@@ -247,6 +247,35 @@
     }
     .gate-btn:disabled { opacity: .4; cursor: not-allowed; }
     .gate-error { color: #f87171; font-size: 13px; margin-top: 12px; min-height: 20px; }
+    .gate-sub-btn {
+      width: 100%;
+      background: none;
+      border: 1.5px solid #444;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #888;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    /* Face ID offer (shown after password success) */
+    #faceid-offer { display: none; }
+    /* Face ID auth screen (shown if already registered) */
+    #faceid-auth { display: none; }
+    .faceid-btn {
+      width: 100%;
+      background: #fff;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 14px;
+    }
 
     /* Submit */
     .submit-btn {
@@ -347,12 +376,35 @@
 <!-- Password gate -->
 <div id="gate">
   <div class="gate-box">
-    <div class="gate-icon">🔒</div>
-    <h2>管理ページ</h2>
-    <p>パスワードを入力してください</p>
-    <input class="gate-input" type="password" id="gateInput" placeholder="••••••••" autocomplete="current-password" />
-    <button class="gate-btn" id="gateBtn">入る</button>
-    <div class="gate-error" id="gateError"></div>
+
+    <!-- パスワード入力 -->
+    <div id="pw-screen">
+      <div class="gate-icon">🔒</div>
+      <h2>管理ページ</h2>
+      <p>パスワードを入力してください</p>
+      <input class="gate-input" type="password" id="gateInput" placeholder="••••••••" autocomplete="current-password" />
+      <button class="gate-btn" id="gateBtn">入る</button>
+      <div class="gate-error" id="gateError"></div>
+    </div>
+
+    <!-- Face ID 登録オファー（パスワード認証成功後） -->
+    <div id="faceid-offer">
+      <div class="gate-icon">🫣</div>
+      <h2>Face IDで開く</h2>
+      <p style="color:#888;font-size:14px;margin-bottom:28px;">次回からパスワード不要になります</p>
+      <button class="faceid-btn" id="registerFaceIdBtn">Face IDを有効にする</button>
+      <button class="gate-sub-btn" id="skipFaceIdBtn">スキップ</button>
+    </div>
+
+    <!-- Face ID 認証画面（登録済みの場合に自動表示） -->
+    <div id="faceid-auth">
+      <div class="gate-icon">🔐</div>
+      <h2>管理ページ</h2>
+      <p id="faceid-status" style="color:#888;font-size:14px;margin-bottom:28px;">Face IDで認証してください</p>
+      <button class="faceid-btn" id="authFaceIdBtn">Face IDで開く</button>
+      <button class="gate-sub-btn" id="fallbackPwBtn">パスワードで入る</button>
+    </div>
+
   </div>
 </div>
 
@@ -447,19 +499,43 @@ const QUESTIONS = [
   '全体的な感想・おすすめポイントは？',
 ];
 
-// ── Password gate ──────────────────────────────────────────────────────────
+// ── Password gate + Face ID ────────────────────────────────────────────────
 (function() {
-  const saved = sessionStorage.getItem('admin_secret');
-  if (saved) {
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('secret').value = saved;
-    return;
-  }
-
+  const gate = document.getElementById('gate');
+  const pwScreen = document.getElementById('pw-screen');
+  const faceOffer = document.getElementById('faceid-offer');
+  const faceAuth = document.getElementById('faceid-auth');
   const gateInput = document.getElementById('gateInput');
   const gateBtn = document.getElementById('gateBtn');
   const gateError = document.getElementById('gateError');
 
+  function isWebAuthnAvailable() {
+    return !!(window.PublicKeyCredential && navigator.credentials?.create);
+  }
+
+  function unlockApp(pw) {
+    sessionStorage.setItem('admin_secret', pw);
+    document.getElementById('secret').value = pw;
+    gate.style.display = 'none';
+  }
+
+  // セッション保存済みならそのまま開く
+  const saved = sessionStorage.getItem('admin_secret');
+  if (saved) {
+    unlockApp(saved);
+    return;
+  }
+
+  // Face ID登録済みなら認証画面を表示
+  if (localStorage.getItem('sauna_credentialId') && isWebAuthnAvailable()) {
+    pwScreen.style.display = 'none';
+    faceAuth.style.display = 'block';
+    setTimeout(() => authWithFaceId(), 400);
+  } else {
+    gateInput.focus();
+  }
+
+  // ── パスワード認証 ──
   async function tryUnlock() {
     const pw = gateInput.value.trim();
     if (!pw) return;
@@ -472,9 +548,16 @@ const QUESTIONS = [
         headers: { 'x-api-secret': pw },
       });
       if (res.ok) {
-        sessionStorage.setItem('admin_secret', pw);
-        document.getElementById('secret').value = pw;
-        document.getElementById('gate').style.display = 'none';
+        // Face ID未登録で対応端末なら登録オファー
+        if (!localStorage.getItem('sauna_credentialId') && isWebAuthnAvailable()) {
+          sessionStorage.setItem('admin_secret', pw);
+          document.getElementById('secret').value = pw;
+          localStorage.setItem('sauna_savedPw', pw);
+          pwScreen.style.display = 'none';
+          faceOffer.style.display = 'block';
+        } else {
+          unlockApp(pw);
+        }
       } else {
         gateError.textContent = 'パスワードが違います';
         gateInput.value = '';
@@ -490,7 +573,78 @@ const QUESTIONS = [
 
   gateBtn.addEventListener('click', tryUnlock);
   gateInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
-  gateInput.focus();
+
+  // ── Face ID 登録 ──
+  document.getElementById('registerFaceIdBtn').addEventListener('click', async () => {
+    try {
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: 'サウナ管理', id: location.hostname },
+          user: {
+            id: crypto.getRandomValues(new Uint8Array(16)),
+            name: 'admin',
+            displayName: '管理者',
+          },
+          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'required',
+          },
+          timeout: 60000,
+        },
+      });
+      const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+      localStorage.setItem('sauna_credentialId', credId);
+      gate.style.display = 'none';
+    } catch (_) {
+      // キャンセルされたらそのまま開く
+      gate.style.display = 'none';
+    }
+  });
+
+  document.getElementById('skipFaceIdBtn').addEventListener('click', () => {
+    gate.style.display = 'none';
+  });
+
+  // ── Face ID 認証 ──
+  async function authWithFaceId() {
+    const credId = localStorage.getItem('sauna_credentialId');
+    if (!credId) { showPwFallback(); return; }
+    try {
+      document.getElementById('faceid-status').textContent = '認証中…';
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      await navigator.credentials.get({
+        publicKey: {
+          challenge,
+          rpId: location.hostname,
+          allowCredentials: [{
+            type: 'public-key',
+            id: Uint8Array.from(atob(credId), c => c.charCodeAt(0)),
+          }],
+          userVerification: 'required',
+          timeout: 60000,
+        },
+      });
+      const savedPw = localStorage.getItem('sauna_savedPw');
+      if (!savedPw) { showPwFallback(); return; }
+      unlockApp(savedPw);
+    } catch (_) {
+      document.getElementById('faceid-status').textContent = '認証に失敗しました';
+      showPwFallback();
+    }
+  }
+
+  document.getElementById('authFaceIdBtn').addEventListener('click', authWithFaceId);
+
+  document.getElementById('fallbackPwBtn').addEventListener('click', showPwFallback);
+
+  function showPwFallback() {
+    faceAuth.style.display = 'none';
+    pwScreen.style.display = 'block';
+    gateInput.focus();
+  }
 })();
 
 // ── State ──────────────────────────────────────────────────────────────────
