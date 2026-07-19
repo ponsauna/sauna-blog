@@ -341,6 +341,9 @@ ${topQueries.length ? topQueries.join('\n') : 'データなし'}
       text: { type: 'mrkdwn', text: `*❌ SEO自動化でエラーが発生しました*\n\`${err.message}\`` },
     }], '社長、エラーが発生しました。確認をお願いします。');
 
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      error: err.message,
+      details: err.response?.data || err.cause?.message || null,
+    });
   }
 }
