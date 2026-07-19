@@ -224,24 +224,9 @@
   <div class="container">
     <div class="err-banner" id="errBanner"></div>
 
-    <!-- ① レシート -->
+    <!-- ① 基本情報 -->
     <div class="card">
-      <div class="card-title">① レシートを読み取る</div>
-      <div class="upload-zone" id="receiptZone">
-        <input type="file" accept="image/*" id="receiptInput" />
-        <div class="uz-icon">📄</div>
-        <p>タップして選択</p>
-      </div>
-      <div class="preview-wrap" id="receiptPreview">
-        <img id="receiptImg" src="" alt="" />
-        <button class="remove-fab" id="receiptRemove">✕</button>
-      </div>
-      <div class="ocr-msg" id="ocrMsg"></div>
-    </div>
-
-    <!-- ② 基本情報 -->
-    <div class="card">
-      <div class="card-title">② 基本情報</div>
+      <div class="card-title">① 基本情報</div>
       <div class="field">
         <label>施設名 *</label>
         <input type="text" id="saunaName" placeholder="例：サウナラボ神田" />
@@ -256,9 +241,9 @@
       </div>
     </div>
 
-    <!-- ③ 写真 -->
+    <!-- ② 写真 -->
     <div class="card">
-      <div class="card-title">③ 写真（最大5枚）</div>
+      <div class="card-title">② 写真（最大5枚）</div>
       <div class="photo-list" id="photoList"></div>
       <div class="add-photo-row" id="addPhotoRow" style="margin-top:12px">
         <input type="file" accept="image/*" multiple id="photoInput" />
@@ -266,9 +251,9 @@
       </div>
     </div>
 
-    <!-- ④ コメント -->
+    <!-- ③ コメント -->
     <div class="card">
-      <div class="card-title">④ 感想・コメント（自由記述）</div>
+      <div class="card-title">③ 感想・コメント（自由記述）</div>
       <div class="comment-wrap">
         <textarea id="comment" placeholder="サウナ室・水風呂・外気浴・全体の感想など、気づいたことを自由に話してください…"></textarea>
         <button id="voiceBtn">🎤 音声入力</button>
@@ -476,45 +461,6 @@ function compress(file, maxPx = 1200, q = 0.75) {
     };
     reader.readAsDataURL(file);
   });
-}
-
-// ── Receipt OCR ──
-document.getElementById('receiptInput').addEventListener('change', async e => {
-  const file = e.target.files[0]; if (!file) return;
-  const b64 = await compress(file, 1600, 0.8);
-  document.getElementById('receiptImg').src = 'data:image/jpeg;base64,' + b64;
-  document.getElementById('receiptPreview').style.display = 'block';
-  document.getElementById('receiptZone').style.display = 'none';
-  doOcr(b64);
-});
-document.getElementById('receiptRemove').addEventListener('click', () => {
-  document.getElementById('receiptPreview').style.display = 'none';
-  document.getElementById('receiptZone').style.display = 'block';
-  document.getElementById('receiptInput').value = '';
-  setOcr('', '');
-});
-async function doOcr(b64) {
-  const secret = sessionStorage.getItem('admin_secret');
-  setOcr('読み取り中…', 'loading');
-  try {
-    const r = await fetch('/api/ocr-receipt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-secret': secret },
-      body: JSON.stringify({ image: b64 }),
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error);
-    if (d.saunaName) document.getElementById('saunaName').value = d.saunaName;
-    if (d.date) document.getElementById('visitDate').value = d.date;
-    setOcr('✓ 読み取り完了' + (d.saunaName ? '：' + d.saunaName : ''), 'ok');
-  } catch (err) {
-    setOcr('読み取り失敗。手動で入力してください。', 'err');
-  }
-}
-function setOcr(msg, cls) {
-  const el = document.getElementById('ocrMsg');
-  el.textContent = msg;
-  el.className = 'ocr-msg' + (cls ? ' ' + cls : '');
 }
 
 // ── Photos ──
