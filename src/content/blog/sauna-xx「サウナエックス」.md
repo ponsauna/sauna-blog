@@ -4,6 +4,8 @@ date: 2024-11-05
 category: "サウナ"
 coverImage: "/images/968f4a_7cbe5a8c09bc4ad8a0064b930cd9b751~mv2.png"
 excerpt: "目黒・四ツ谷に展開する男性専用サウナ「SAUNA XX（サウナエックス）」を徹底レビュー。約9℃の超低温水風呂と漆黒のオクタゴンサウナが特徴。2025年最新の料金・アクセスを掲載。"
+rating: 5
+facilityName: "サウナXX（サウナエックス）"
 ---
 
 ## 基本情報

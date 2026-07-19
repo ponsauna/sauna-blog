@@ -4,6 +4,8 @@ date: 2024-05-20
 category: "サウナ"
 coverImage: "/images/968f4a_5ffeda79f5c549168d4d90d3b51a6fb3~mv2.jpg"
 excerpt: "長野・野尻湖のほとりに立つアウトドアサウナの聖地「The Sauna」を徹底レビュー。薪ストーブ・野尻湖への直入り・冬の雪ダイブまで。2025年最新の料金・アクセス情報を掲載。"
+rating: 5
+facilityName: "THE SAUNA（長野・野尻湖）"
 ---
 
 ## 基本情報

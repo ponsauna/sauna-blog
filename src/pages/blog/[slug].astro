@@ -51,6 +51,30 @@ const jsonLd = {
     '@id': pageUrl,
   },
 };
+
+const reviewLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Review',
+  itemReviewed: {
+    '@type': 'LocalBusiness',
+    name: post.data.facilityName || post.data.title,
+    image: ogImage,
+  },
+  reviewRating: {
+    '@type': 'Rating',
+    ratingValue: post.data.rating ?? 5,
+    bestRating: 5,
+    worstRating: 1,
+  },
+  author: {
+    '@type': 'Person',
+    name: 'Tsuyoshi Shirota',
+    url: siteUrl,
+  },
+  reviewBody: post.data.excerpt,
+  url: pageUrl,
+  datePublished: post.data.date.toISOString(),
+};
 ---
 
 <BaseLayout
@@ -62,6 +86,7 @@ const jsonLd = {
   publishedDate={post.data.date.toISOString()}
   jsonLd={jsonLd}
 >
+  <script type="application/ld+json" set:html={JSON.stringify(reviewLd)} slot="head" />
   <Header slot="header" />
 
   <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

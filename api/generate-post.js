@@ -34,6 +34,8 @@ date: ${date}
 category: "サウナレビュー"
 coverImage: "/images/posts/SLUG/cover.jpg"
 excerpt: "（${saunaName}の特徴を1文で）"
+rating: 5
+facilityName: "${saunaName}"
 ---
 
 ## 基本情報

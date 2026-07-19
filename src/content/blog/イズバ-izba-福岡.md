@@ -4,6 +4,8 @@ date: 2024-03-10
 category: "サウナ"
 coverImage: "/images/968f4a_1d8ebb3896ab4b4b894bcf2bf10de522~mv2.png"
 excerpt: "福岡・宗像にある日本唯一のロシア式サウナ「バーニャ」施設IZBA。薪ストーブで暖まるログハウスと天然水風呂、本格ロシア料理まで。完全貸切・予約制の特別なサウナ体験を徹底解説。"
+rating: 5
+facilityName: "IZBA（イズバ）福岡"
 ---
 
 ## 基本情報

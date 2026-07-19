@@ -4,6 +4,8 @@ date: 2024-08-10
 category: "サウナ"
 coverImage: "/images/968f4a_00bcccd858f44a9dbc46e5b9e55f57bd~mv2.jpg"
 excerpt: "神田の高級フィンランド式サウナ「SaunaLab Kanda」を徹底レビュー。2025年6月から予約不要に！アイスサウナ・男女入替制など、他にはない体験を詳しく解説します。"
+rating: 5
+facilityName: "サウナラボ神田"
 ---
 
 ## 基本情報

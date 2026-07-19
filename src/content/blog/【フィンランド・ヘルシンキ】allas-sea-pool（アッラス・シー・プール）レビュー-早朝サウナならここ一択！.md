@@ -4,6 +4,8 @@ date: 2024-12-01
 category: "サウナ"
 coverImage: "/images/968f4a_d2fee17ffe144065a1004b93d596f4f2~mv2.jpg"
 excerpt: "フィンランド・ヘルシンキのAllas Sea Poolを徹底レビュー。バルト海を望む5種のサウナと3種のプール。早朝6時から営業し朝ウナにも最適。2025年最新の料金・アクセスを掲載。"
+rating: 5
+facilityName: "Allas Sea Pool（ヘルシンキ）"
 ---
 
 ## 基本情報

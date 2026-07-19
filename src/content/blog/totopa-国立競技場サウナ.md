@@ -4,6 +4,8 @@ date: 2024-03-22
 category: "サウナ"
 coverImage: "/images/968f4a_4d646c970d854aae956e3680bb5a2384~mv2.png"
 excerpt: "国立競技場そばの都市型スパ「TOTOPA都立明治公園店」を徹底レビュー。3種のサウナ・160cm水風呂・充実のドリンクバーで18通りのととのい体験。料金・アクセス・最新情報を完全解説。"
+rating: 5
+facilityName: "totopa 国立競技場サウナ"
 ---
 
 ## 基本情報
