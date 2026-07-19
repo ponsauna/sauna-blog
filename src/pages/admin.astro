@@ -198,6 +198,56 @@
     }
     .no-voice { font-size: 11px; color: #bbb; text-align: center; margin-top: 6px; }
 
+    /* Password gate */
+    #gate {
+      position: fixed;
+      inset: 0;
+      background: #1a1a1a;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .gate-box {
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    .gate-box .gate-icon { font-size: 48px; margin-bottom: 16px; }
+    .gate-box h2 { color: #fff; font-size: 20px; margin-bottom: 8px; }
+    .gate-box p { color: #888; font-size: 14px; margin-bottom: 28px; }
+    .gate-input {
+      width: 100%;
+      background: #2a2a2a;
+      border: 1.5px solid #3a3a3a;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 18px;
+      color: #fff;
+      text-align: center;
+      letter-spacing: .1em;
+      outline: none;
+      margin-bottom: 14px;
+    }
+    .gate-input:focus { border-color: #666; }
+    .gate-btn {
+      width: 100%;
+      background: #fff;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .gate-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .gate-error { color: #f87171; font-size: 13px; margin-top: 12px; min-height: 20px; }
+
     /* Submit */
     .submit-btn {
       width: 100%;
@@ -294,6 +344,18 @@
 </head>
 <body>
 
+<!-- Password gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">🔒</div>
+    <h2>管理ページ</h2>
+    <p>パスワードを入力してください</p>
+    <input class="gate-input" type="password" id="gateInput" placeholder="••••••••" autocomplete="current-password" />
+    <button class="gate-btn" id="gateBtn">入る</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
 <header>
   <h1>🧖 サウナ記事作成</h1>
 </header>
@@ -384,6 +446,52 @@ const QUESTIONS = [
   '混み具合・滞在時間はどうでしたか？',
   '全体的な感想・おすすめポイントは？',
 ];
+
+// ── Password gate ──────────────────────────────────────────────────────────
+(function() {
+  const saved = sessionStorage.getItem('admin_secret');
+  if (saved) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('secret').value = saved;
+    return;
+  }
+
+  const gateInput = document.getElementById('gateInput');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateError = document.getElementById('gateError');
+
+  async function tryUnlock() {
+    const pw = gateInput.value.trim();
+    if (!pw) return;
+    gateBtn.disabled = true;
+    gateBtn.textContent = '確認中…';
+    gateError.textContent = '';
+    try {
+      const res = await fetch('/api/auth-check', {
+        method: 'POST',
+        headers: { 'x-api-secret': pw },
+      });
+      if (res.ok) {
+        sessionStorage.setItem('admin_secret', pw);
+        document.getElementById('secret').value = pw;
+        document.getElementById('gate').style.display = 'none';
+      } else {
+        gateError.textContent = 'パスワードが違います';
+        gateInput.value = '';
+        gateInput.focus();
+      }
+    } catch (_) {
+      gateError.textContent = '通信エラー。再試行してください。';
+    } finally {
+      gateBtn.disabled = false;
+      gateBtn.textContent = '入る';
+    }
+  }
+
+  gateBtn.addEventListener('click', tryUnlock);
+  gateInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+  gateInput.focus();
+})();
 
 // ── State ──────────────────────────────────────────────────────────────────
 let receiptBase64 = null;
