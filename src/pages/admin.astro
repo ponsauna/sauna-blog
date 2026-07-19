@@ -174,6 +174,20 @@
       display: none; background: #fff5f5; border: 1px solid #fecaca;
       border-radius: 10px; padding: 14px; color: #dc2626; font-size: 13px; margin-bottom: 14px;
     }
+
+    /* ─── SEO ───────────────────────────────────────────────── */
+    .seo-metric { display: flex; gap: 10px; margin-bottom: 14px; }
+    .seo-metric-box { flex: 1; background: #f7f7f7; border-radius: 10px; padding: 12px; text-align: center; }
+    .seo-metric-box .val { font-size: 22px; font-weight: 700; color: #111; }
+    .seo-metric-box .lbl { font-size: 11px; color: #999; margin-top: 2px; }
+    .seo-result { margin-top: 14px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: #333; }
+    .btn-seo {
+      flex: 1; background: #f0f0f0; color: #111; border: none;
+      border-radius: 10px; padding: 13px; font-family: inherit;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .btn-seo.run { background: #111; color: #fff; }
+    .seo-btn-row { display: flex; gap: 10px; }
   </style>
 </head>
 <body>
@@ -289,6 +303,21 @@
       <div class="err-banner" id="publishErr"></div>
       <button class="btn-primary" id="publishBtn">🚀 投稿する</button>
       <button class="btn-outline" id="copyDraftBtn">📋 Markdownをコピー</button>
+    </div>
+
+    <!-- SEO ダッシュボード -->
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">📊 SEO ダッシュボード</div>
+      <div class="seo-metric" id="seoMetrics" style="display:none">
+        <div class="seo-metric-box"><div class="val" id="seoClicks">–</div><div class="lbl">クリック/28日</div></div>
+        <div class="seo-metric-box"><div class="val" id="seoImpr">–</div><div class="lbl">表示回数</div></div>
+        <div class="seo-metric-box"><div class="val" id="seoCtr">–</div><div class="lbl">平均CTR</div></div>
+      </div>
+      <div class="seo-btn-row">
+        <button class="btn-seo" id="seoReportBtn">📈 レポート取得</button>
+        <button class="btn-seo run" id="seoRunBtn">🔧 今すぐ最適化</button>
+      </div>
+      <div class="seo-result" id="seoResult" style="display:none"></div>
     </div>
 
     <!-- 投稿完了 -->
@@ -630,6 +659,64 @@ document.getElementById('publishBtn').addEventListener('click', async () => {
   } finally {
     btn.disabled = false;
     btn.textContent = '🚀 投稿する';
+  }
+});
+
+// ── SEO ──
+document.getElementById('seoReportBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('seoReportBtn');
+  btn.textContent = '取得中…'; btn.disabled = true;
+  const secret = sessionStorage.getItem('admin_secret');
+  try {
+    const r = await fetch('/api/seo-weekly', { headers: { 'x-api-secret': secret } });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    document.getElementById('seoClicks').textContent = d.summary.totalClicks;
+    document.getElementById('seoImpr').textContent = d.summary.totalImpressions;
+    document.getElementById('seoCtr').textContent = d.summary.avgCtr + '%';
+    document.getElementById('seoMetrics').style.display = 'flex';
+    const top5 = (d.pageStats || []).slice(0, 5).map(p =>
+      `${p.url.replace('https://tsuyoshishirota.com/blog/','').replace('/','')}\n  クリック:${p.curr.clicks} 表示:${p.curr.impressions} CTR:${(p.curr.ctr*100).toFixed(1)}% 順位:${p.curr.position.toFixed(1)}`
+    ).join('\n\n');
+    const result = document.getElementById('seoResult');
+    result.textContent = '【上位5記事】\n' + (top5 || 'データなし');
+    result.style.display = 'block';
+  } catch (err) {
+    alert('エラー: ' + err.message);
+  } finally {
+    btn.textContent = '📈 レポート取得'; btn.disabled = false;
+  }
+});
+
+document.getElementById('seoRunBtn').addEventListener('click', async () => {
+  if (!confirm('今すぐSEO最適化を実行しますか？\n（問題のある記事のtitle・excerptを書き換えます）')) return;
+  const btn = document.getElementById('seoRunBtn');
+  btn.innerHTML = '<span class="spinner"></span>分析・最適化中…'; btn.disabled = true;
+  const secret = sessionStorage.getItem('admin_secret');
+  try {
+    const r = await fetch('/api/seo-weekly', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-secret': secret },
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    let text = `✅ 完了 — ${d.analyzed}記事を分析、${d.fixed.length}記事を改善\n`;
+    if (d.fixed.length > 0) {
+      text += '\n【改善した記事】\n';
+      for (const f of d.fixed) {
+        text += `\n▪ ${f.slug}\n旧: ${f.oldTitle}\n新: ${f.newTitle}\n`;
+      }
+      text += '\nSlackに詳細レポートを送りました 📬';
+    } else {
+      text += '改善が必要な記事は見つかりませんでした。';
+    }
+    const result = document.getElementById('seoResult');
+    result.textContent = text;
+    result.style.display = 'block';
+  } catch (err) {
+    alert('エラー: ' + err.message);
+  } finally {
+    btn.textContent = '🔧 今すぐ最適化'; btn.disabled = false;
   }
 });
 

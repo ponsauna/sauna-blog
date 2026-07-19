@@ -6,6 +6,12 @@
       "permanent": true
     }
   ],
+  "crons": [
+    {
+      "path": "/api/seo-weekly",
+      "schedule": "0 0 * * 1"
+    }
+  ],
   "functions": {
     "api/webhook.js": {
       "maxDuration": 60
@@ -21,6 +27,9 @@
     },
     "api/publish-post.js": {
       "maxDuration": 30
+    },
+    "api/seo-weekly.js": {
+      "maxDuration": 120
     }
   }
 }
