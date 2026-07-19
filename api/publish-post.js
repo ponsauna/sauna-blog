@@ -19,9 +19,13 @@ export default async function handler(req, res) {
     };
     const api = `https://api.github.com/repos/${GITHUB_REPO}`;
 
+    // --- より前のゴミ（Claudeの検索ログなど）を除去
+    const firstDash = draft.indexOf('---');
+    const cleanDraft = firstDash > 0 ? draft.slice(firstDash) : draft;
+
     // coverImage を実際のパスに置換
     const coverPath = `/images/posts/${slug}/cover.jpg`;
-    const finalDraft = draft.replace(/coverImage:.*/, `coverImage: "${coverPath}"`);
+    const finalDraft = cleanDraft.replace(/coverImage:.*/, `coverImage: "${coverPath}"`);
 
     // ── ファイルを順番にコミット ──
     const mdFile = `src/content/blog/${date}-${slug}.md`;
