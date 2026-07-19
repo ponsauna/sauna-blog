@@ -18,6 +18,9 @@
     },
     "api/auth-check.js": {
       "maxDuration": 5
+    },
+    "api/publish-post.js": {
+      "maxDuration": 30
     }
   }
 }

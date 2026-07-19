@@ -10,504 +10,323 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Noto Sans JP', sans-serif;
-      background: #f5f5f0;
-      color: #1a1a1a;
-      min-height: 100vh;
-      padding-bottom: 40px;
-    }
-    header {
-      background: #1a1a1a;
-      color: #fff;
-      padding: 16px 20px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    header h1 { font-size: 18px; font-weight: 700; }
-    .container { max-width: 640px; margin: 0 auto; padding: 20px 16px; }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
-    }
-    .card h2 {
-      font-size: 14px;
-      font-weight: 700;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      margin-bottom: 14px;
-    }
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: #555;
-      margin-bottom: 6px;
-    }
-    input[type="text"],
-    input[type="date"],
-    input[type="password"],
-    textarea {
-      width: 100%;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-family: inherit;
-      font-size: 15px;
-      color: #1a1a1a;
-      background: #fafafa;
-      outline: none;
-      transition: border-color .15s;
-    }
-    input:focus, textarea:focus { border-color: #1a1a1a; background: #fff; }
-    .field { margin-bottom: 14px; }
-    .field:last-child { margin-bottom: 0; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: #f4f4f0; color: #1a1a1a; min-height: 100vh; }
 
-    /* Receipt */
-    .receipt-upload {
-      border: 2px dashed #d0d0d0;
-      border-radius: 10px;
-      padding: 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      position: relative;
-    }
-    .receipt-upload:hover { border-color: #999; background: #fafafa; }
-    .receipt-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
-    .receipt-upload .icon { font-size: 32px; margin-bottom: 8px; }
-    .receipt-upload p { font-size: 14px; color: #888; }
-    .receipt-preview {
-      display: none;
-      margin-top: 12px;
-      position: relative;
-    }
-    .receipt-preview img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid #e0e0e0; }
-    .receipt-preview .remove-btn {
-      position: absolute;
-      top: 6px; right: 6px;
-      background: rgba(0,0,0,.5);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 24px; height: 24px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .ocr-status {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #888;
-      min-height: 20px;
-      text-align: center;
-    }
-    .ocr-status.loading { color: #f0a500; }
-    .ocr-status.success { color: #22a85c; }
-    .ocr-status.error { color: #e53e3e; }
-
-    /* Photos */
-    .photo-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .photo-thumb {
-      aspect-ratio: 1;
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
-      background: #f0f0f0;
-    }
-    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .photo-thumb .remove-btn {
-      position: absolute;
-      top: 4px; right: 4px;
-      background: rgba(0,0,0,.5);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 22px; height: 22px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .add-photo-btn {
-      aspect-ratio: 1;
-      border: 2px dashed #d0d0d0;
-      border-radius: 8px;
-      background: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: #aaa;
-      position: relative;
-    }
-    .add-photo-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
-
-    /* Q&A */
-    .qa-item { margin-bottom: 18px; }
-    .qa-item:last-child { margin-bottom: 0; }
-    .qa-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: #1a1a1a;
-      margin-bottom: 8px;
-    }
-    .qa-input-row {
-      display: flex;
-      gap: 8px;
-      align-items: flex-end;
-    }
-    .qa-input-row textarea {
-      flex: 1;
-      min-height: 72px;
-      resize: vertical;
-    }
-    .voice-btn {
-      flex-shrink: 0;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 1.5px solid #e0e0e0;
-      background: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all .15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .voice-btn:hover { border-color: #999; }
-    .voice-btn.recording {
-      background: #fee2e2;
-      border-color: #e53e3e;
-      animation: pulse 1s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.08); }
-    }
-    .no-voice { font-size: 11px; color: #bbb; text-align: center; margin-top: 6px; }
-
-    /* Password gate */
+    /* ─── Gate ─────────────────────────────────────────────── */
     #gate {
-      position: fixed;
-      inset: 0;
-      background: #1a1a1a;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      position: fixed; inset: 0; background: #111; z-index: 200;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
     }
-    .gate-box {
-      width: 100%;
-      max-width: 360px;
-      text-align: center;
-    }
-    .gate-box .gate-icon { font-size: 48px; margin-bottom: 16px; }
-    .gate-box h2 { color: #fff; font-size: 20px; margin-bottom: 8px; }
-    .gate-box p { color: #888; font-size: 14px; margin-bottom: 28px; }
+    .gate-box { width: 100%; max-width: 340px; text-align: center; }
+    .gate-icon { font-size: 44px; margin-bottom: 14px; }
+    .gate-box h2 { color: #fff; font-size: 20px; margin-bottom: 6px; }
+    .gate-box p { color: #666; font-size: 13px; margin-bottom: 24px; }
     .gate-input {
-      width: 100%;
-      background: #2a2a2a;
-      border: 1.5px solid #3a3a3a;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-family: inherit;
-      font-size: 18px;
-      color: #fff;
-      text-align: center;
-      letter-spacing: .1em;
-      outline: none;
-      margin-bottom: 14px;
+      width: 100%; background: #1e1e1e; border: 1.5px solid #333;
+      border-radius: 10px; padding: 14px 16px; font-family: inherit;
+      font-size: 18px; color: #fff; text-align: center; letter-spacing: .1em; outline: none; margin-bottom: 12px;
     }
-    .gate-input:focus { border-color: #666; }
-    .gate-btn {
-      width: 100%;
-      background: #fff;
-      color: #1a1a1a;
-      border: none;
-      border-radius: 10px;
-      padding: 14px;
-      font-family: inherit;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity .15s;
+    .gate-input:focus { border-color: #555; }
+    .gate-primary {
+      width: 100%; background: #fff; color: #111; border: none;
+      border-radius: 10px; padding: 14px; font-family: inherit;
+      font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 10px;
     }
-    .gate-btn:disabled { opacity: .4; cursor: not-allowed; }
-    .gate-error { color: #f87171; font-size: 13px; margin-top: 12px; min-height: 20px; }
-    .gate-sub-btn {
-      width: 100%;
-      background: none;
-      border: 1.5px solid #444;
-      border-radius: 10px;
-      padding: 12px;
-      font-family: inherit;
-      font-size: 14px;
-      color: #888;
-      cursor: pointer;
-      margin-top: 10px;
+    .gate-primary:disabled { opacity: .4; }
+    .gate-secondary {
+      width: 100%; background: none; border: 1.5px solid #333; border-radius: 10px;
+      padding: 12px; font-family: inherit; font-size: 14px; color: #666; cursor: pointer;
     }
-    /* Face ID offer (shown after password success) */
-    #faceid-offer { display: none; }
-    /* Face ID auth screen (shown if already registered) */
-    #faceid-auth { display: none; }
-    .faceid-btn {
-      width: 100%;
-      background: #fff;
-      color: #1a1a1a;
-      border: none;
-      border-radius: 10px;
-      padding: 14px;
-      font-family: inherit;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-bottom: 14px;
-    }
+    .gate-error { color: #f87171; font-size: 13px; margin-top: 10px; min-height: 18px; }
+    #faceid-offer, #faceid-auth { display: none; }
 
-    /* Submit */
-    .submit-btn {
-      width: 100%;
-      background: #1a1a1a;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 16px;
-      font-family: inherit;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity .15s;
-      -webkit-tap-highlight-color: transparent;
+    /* ─── App shell ─────────────────────────────────────────── */
+    #app { display: none; padding-bottom: 60px; }
+    header {
+      background: #111; color: #fff; padding: 14px 18px;
+      position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px;
     }
-    .submit-btn:hover { opacity: .85; }
-    .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
-    .submit-btn .spinner {
-      display: inline-block;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
+    header h1 { font-size: 17px; font-weight: 700; flex: 1; }
+
+    /* ─── Cards ─────────────────────────────────────────────── */
+    .container { max-width: 640px; margin: 0 auto; padding: 16px; }
+    .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .card-title { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
+
+    /* ─── Forms ─────────────────────────────────────────────── */
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    label { display: block; font-size: 12px; font-weight: 500; color: #888; margin-bottom: 5px; }
+    input[type="text"], input[type="date"], input[type="url"] {
+      width: 100%; border: 1.5px solid #e8e8e8; border-radius: 8px;
+      padding: 11px 12px; font-family: inherit; font-size: 15px; color: #111;
+      background: #fafafa; outline: none;
+    }
+    input:focus { border-color: #111; background: #fff; }
+
+    /* ─── Receipt ───────────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed #ddd; border-radius: 10px; padding: 28px 16px;
+      text-align: center; cursor: pointer; position: relative; transition: .15s;
+    }
+    .upload-zone:hover { border-color: #aaa; background: #fafafa; }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .upload-zone .uz-icon { font-size: 30px; margin-bottom: 8px; }
+    .upload-zone p { font-size: 13px; color: #aaa; }
+    .preview-wrap { display: none; position: relative; margin-top: 12px; }
+    .preview-wrap img { width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; border: 1px solid #eee; }
+    .remove-fab {
+      position: absolute; top: 6px; right: 6px;
+      background: rgba(0,0,0,.55); color: #fff; border: none;
+      border-radius: 50%; width: 26px; height: 26px; font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .ocr-msg { margin-top: 10px; font-size: 13px; text-align: center; min-height: 18px; color: #aaa; }
+    .ocr-msg.loading { color: #f0a500; }
+    .ocr-msg.ok { color: #22a85c; }
+    .ocr-msg.err { color: #e53e3e; }
+
+    /* ─── Photos ─────────────────────────────────────────────── */
+    .photo-list { display: flex; flex-direction: column; gap: 12px; }
+    .photo-row { display: flex; gap: 10px; align-items: center; }
+    .photo-thumb-sm {
+      flex-shrink: 0; width: 72px; height: 72px; border-radius: 8px;
+      overflow: hidden; background: #f0f0f0; position: relative;
+    }
+    .photo-thumb-sm img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-thumb-sm .remove-fab { top: 3px; right: 3px; width: 22px; height: 22px; font-size: 11px; }
+    .photo-caption-input {
+      flex: 1; border: 1.5px solid #e8e8e8; border-radius: 8px;
+      padding: 10px 12px; font-family: inherit; font-size: 14px;
+      color: #111; background: #fafafa; outline: none;
+    }
+    .photo-caption-input:focus { border-color: #111; background: #fff; }
+    .add-photo-row {
+      display: flex; align-items: center; justify-content: center;
+      border: 2px dashed #ddd; border-radius: 10px; padding: 16px;
+      cursor: pointer; position: relative; color: #aaa; font-size: 13px; gap: 6px;
+    }
+    .add-photo-row input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+
+    /* ─── Comment ───────────────────────────────────────────── */
+    .comment-wrap { position: relative; }
+    #comment {
+      width: 100%; min-height: 140px; border: 1.5px solid #e8e8e8;
+      border-radius: 10px; padding: 12px 12px 48px; font-family: inherit;
+      font-size: 15px; line-height: 1.6; color: #111; background: #fafafa;
+      resize: vertical; outline: none;
+    }
+    #comment:focus { border-color: #111; background: #fff; }
+    #voiceBtn {
+      position: absolute; bottom: 10px; right: 10px;
+      background: #111; color: #fff; border: none; border-radius: 20px;
+      padding: 7px 14px; font-family: inherit; font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+    }
+    #voiceBtn.recording { background: #e53e3e; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    .no-voice-note { font-size: 11px; color: #ccc; margin-top: 6px; text-align: right; }
+
+    /* ─── Buttons ────────────────────────────────────────────── */
+    .btn-primary {
+      width: 100%; background: #111; color: #fff; border: none;
+      border-radius: 12px; padding: 16px; font-family: inherit;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-primary:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-outline {
+      width: 100%; background: none; border: 1.5px solid #ddd;
+      border-radius: 10px; padding: 13px; font-family: inherit;
+      font-size: 14px; color: #555; cursor: pointer; margin-top: 10px;
+    }
+    .spinner {
+      display: inline-block; width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Result */
-    .result-card {
-      display: none;
-      background: #fff;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    /* ─── Draft section ──────────────────────────────────────── */
+    #draft-section { display: none; }
+    .draft-textarea {
+      width: 100%; min-height: 360px; border: 1.5px solid #e8e8e8;
+      border-radius: 10px; padding: 14px; font-family: 'Courier New', monospace;
+      font-size: 13px; line-height: 1.7; color: #111; background: #fafafa;
+      resize: vertical; outline: none;
     }
-    .result-header {
-      background: #f0fdf4;
-      border-bottom: 1px solid #bbf7d0;
-      padding: 16px 20px;
-    }
-    .result-header h2 { font-size: 16px; color: #16a34a; font-weight: 700; }
-    .pr-link {
-      display: inline-block;
-      margin-top: 10px;
-      background: #1a1a1a;
-      color: #fff;
-      text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-    }
-    .draft-section { padding: 16px 20px; }
-    .draft-section h3 { font-size: 13px; color: #888; margin-bottom: 10px; }
-    .draft-content {
-      background: #f8f8f8;
-      border: 1px solid #e8e8e8;
-      border-radius: 8px;
-      padding: 14px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-all;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .copy-btn {
-      margin-top: 10px;
-      background: none;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-family: inherit;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .copy-btn:hover { background: #f0f0f0; }
+    .draft-textarea:focus { border-color: #111; background: #fff; }
 
-    .error-card {
-      display: none;
-      background: #fff5f5;
-      border: 1px solid #fed7d7;
-      border-radius: 10px;
-      padding: 16px;
-      color: #c53030;
-      font-size: 14px;
-      margin-bottom: 16px;
+    /* ─── Publish result ─────────────────────────────────────── */
+    #publish-result { display: none; }
+    .success-banner {
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 14px;
+    }
+    .success-banner h2 { color: #16a34a; font-size: 18px; margin-bottom: 8px; }
+    .success-banner a {
+      display: inline-block; margin-top: 10px; background: #111; color: #fff;
+      text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    }
+
+    /* ─── Error ──────────────────────────────────────────────── */
+    .err-banner {
+      display: none; background: #fff5f5; border: 1px solid #fecaca;
+      border-radius: 10px; padding: 14px; color: #dc2626; font-size: 13px; margin-bottom: 14px;
     }
   </style>
 </head>
 <body>
 
-<!-- Password gate -->
+<!-- ════════════════════════════════════════
+     GATE
+════════════════════════════════════════ -->
 <div id="gate">
   <div class="gate-box">
 
-    <!-- パスワード入力 -->
     <div id="pw-screen">
       <div class="gate-icon">🔒</div>
       <h2>管理ページ</h2>
-      <p>パスワードを入力してください</p>
+      <p>パスワードを入力</p>
       <input class="gate-input" type="password" id="gateInput" placeholder="••••••••" autocomplete="current-password" />
-      <button class="gate-btn" id="gateBtn">入る</button>
+      <button class="gate-primary" id="gateBtn">入る</button>
       <div class="gate-error" id="gateError"></div>
     </div>
 
-    <!-- Face ID 登録オファー（パスワード認証成功後） -->
     <div id="faceid-offer">
       <div class="gate-icon">🫣</div>
       <h2>Face IDで開く</h2>
-      <p style="color:#888;font-size:14px;margin-bottom:28px;">次回からパスワード不要になります</p>
-      <button class="faceid-btn" id="registerFaceIdBtn">Face IDを有効にする</button>
-      <button class="gate-sub-btn" id="skipFaceIdBtn">スキップ</button>
+      <p>次回からパスワード不要になります</p>
+      <button class="gate-primary" id="registerFaceIdBtn">Face IDを有効にする</button>
+      <button class="gate-secondary" id="skipFaceIdBtn">スキップ</button>
     </div>
 
-    <!-- Face ID 認証画面（登録済みの場合に自動表示） -->
     <div id="faceid-auth">
       <div class="gate-icon">🔐</div>
       <h2>管理ページ</h2>
-      <p id="faceid-status" style="color:#888;font-size:14px;margin-bottom:28px;">Face IDで認証してください</p>
-      <button class="faceid-btn" id="authFaceIdBtn">Face IDで開く</button>
-      <button class="gate-sub-btn" id="fallbackPwBtn">パスワードで入る</button>
+      <p id="faceid-status">Face IDで認証してください</p>
+      <button class="gate-primary" id="authFaceIdBtn">Face IDで開く</button>
+      <button class="gate-secondary" id="fallbackPwBtn">パスワードで入る</button>
+      <div class="gate-error" id="faceError"></div>
     </div>
 
   </div>
 </div>
 
-<header>
-  <h1>🧖 サウナ記事作成</h1>
-</header>
+<!-- ════════════════════════════════════════
+     APP
+════════════════════════════════════════ -->
+<div id="app">
+  <header>
+    <h1>🧖 サウナ記事作成</h1>
+  </header>
 
-<div class="container">
+  <div class="container">
+    <div class="err-banner" id="errBanner"></div>
 
-  <!-- Error -->
-  <div class="error-card" id="errorCard"></div>
+    <!-- ① レシート -->
+    <div class="card">
+      <div class="card-title">① レシートを読み取る</div>
+      <div class="upload-zone" id="receiptZone">
+        <input type="file" accept="image/*" id="receiptInput" />
+        <div class="uz-icon">📄</div>
+        <p>タップして選択</p>
+      </div>
+      <div class="preview-wrap" id="receiptPreview">
+        <img id="receiptImg" src="" alt="" />
+        <button class="remove-fab" id="receiptRemove">✕</button>
+      </div>
+      <div class="ocr-msg" id="ocrMsg"></div>
+    </div>
 
-  <!-- Result -->
-  <div class="result-card" id="resultCard">
-    <div class="result-header">
-      <h2>✅ 下書き生成完了！</h2>
-      <a id="prLink" href="#" target="_blank" class="pr-link">GitHub PR を開く →</a>
+    <!-- ② 基本情報 -->
+    <div class="card">
+      <div class="card-title">② 基本情報</div>
+      <div class="field">
+        <label>施設名 *</label>
+        <input type="text" id="saunaName" placeholder="例：サウナラボ神田" />
+      </div>
+      <div class="field">
+        <label>訪問日</label>
+        <input type="date" id="visitDate" />
+      </div>
+      <div class="field">
+        <label>サウナイキタイ URL（任意）</label>
+        <input type="url" id="saunaUrl" placeholder="https://sauna-ikitai.com/saunas/..." />
+      </div>
     </div>
-    <div class="draft-section">
-      <h3>Markdown プレビュー</h3>
-      <div class="draft-content" id="draftContent"></div>
-      <button class="copy-btn" id="copyBtn">📋 コピー</button>
-    </div>
-  </div>
 
-  <!-- 1. Receipt -->
-  <div class="card">
-    <h2>① レシートを読み取る</h2>
-    <div class="receipt-upload" id="receiptUpload">
-      <input type="file" accept="image/*" id="receiptInput" />
-      <div class="icon">📄</div>
-      <p>レシートの写真をタップして選択</p>
-    </div>
-    <div class="receipt-preview" id="receiptPreview">
-      <img id="receiptImg" src="" alt="receipt" />
-      <button class="remove-btn" id="receiptRemove">✕</button>
-    </div>
-    <div class="ocr-status" id="ocrStatus"></div>
-  </div>
-
-  <!-- 2. Basic info -->
-  <div class="card">
-    <h2>② 基本情報</h2>
-    <div class="field">
-      <label for="saunaName">施設名 *</label>
-      <input type="text" id="saunaName" placeholder="例：サウナラボ神田" />
-    </div>
-    <div class="field">
-      <label for="visitDate">訪問日</label>
-      <input type="date" id="visitDate" />
-    </div>
-  </div>
-
-  <!-- 3. Photos -->
-  <div class="card">
-    <h2>③ サウナ写真（最大5枚）</h2>
-    <div class="photo-grid" id="photoGrid">
-      <button class="add-photo-btn" id="addPhotoBtn">
+    <!-- ③ 写真 -->
+    <div class="card">
+      <div class="card-title">③ 写真（最大5枚）</div>
+      <div class="photo-list" id="photoList"></div>
+      <div class="add-photo-row" id="addPhotoRow" style="margin-top:12px">
         <input type="file" accept="image/*" multiple id="photoInput" />
-        ＋
-      </button>
+        <span>＋ 写真を追加</span>
+      </div>
     </div>
-  </div>
 
-  <!-- 4. Q&A -->
-  <div class="card">
-    <h2>④ Q&amp;A（音声入力可）</h2>
-    <div id="qaList"></div>
-    <p class="no-voice" id="noVoiceMsg" style="display:none">
-      ※ このブラウザは音声入力非対応です。テキストで入力してください。
-    </p>
-  </div>
-
-  <!-- 5. Auth & Submit -->
-  <div class="card">
-    <h2>⑤ 送信</h2>
-    <div class="field">
-      <label for="secret">パスワード</label>
-      <input type="password" id="secret" placeholder="••••••••" />
+    <!-- ④ コメント -->
+    <div class="card">
+      <div class="card-title">④ 感想・コメント（自由記述）</div>
+      <div class="comment-wrap">
+        <textarea id="comment" placeholder="サウナ室・水風呂・外気浴・全体の感想など、気づいたことを自由に話してください…"></textarea>
+        <button id="voiceBtn">🎤 音声入力</button>
+      </div>
+      <div class="no-voice-note" id="noVoiceNote" style="display:none">テキスト入力のみ対応</div>
     </div>
-    <button class="submit-btn" id="submitBtn">✨ 下書きを生成する</button>
-  </div>
 
+    <!-- 生成ボタン -->
+    <button class="btn-primary" id="generateBtn">✨ 下書きを生成する</button>
+
+    <!-- ────────── 下書きセクション ────────── -->
+    <div id="draft-section">
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-title">下書き（編集可）</div>
+        <textarea class="draft-textarea" id="draftArea"></textarea>
+      </div>
+
+      <!-- サムネ -->
+      <div class="card">
+        <div class="card-title">サムネ（任意・後から追加OK）</div>
+        <div class="upload-zone" id="thumbZone">
+          <input type="file" accept="image/*" id="thumbInput" />
+          <div class="uz-icon">🖼️</div>
+          <p>タップして選択</p>
+        </div>
+        <div class="preview-wrap" id="thumbPreview">
+          <img id="thumbImg" src="" alt="" />
+          <button class="remove-fab" id="thumbRemove">✕</button>
+        </div>
+      </div>
+
+      <div class="err-banner" id="publishErr"></div>
+      <button class="btn-primary" id="publishBtn">🚀 投稿する</button>
+      <button class="btn-outline" id="copyDraftBtn">📋 Markdownをコピー</button>
+    </div>
+
+    <!-- 投稿完了 -->
+    <div id="publish-result">
+      <div class="success-banner">
+        <h2>✅ 投稿完了！</h2>
+        <p style="font-size:13px;color:#555;">Vercelが自動ビルド中です（1〜2分）</p>
+        <a id="blogLink" href="#" target="_blank">ブログを確認する →</a>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-const QUESTIONS = [
-  'サウナ室はどうでしたか？（温度・雰囲気・ストーブなど）',
-  '水風呂はどうでしたか？（温度・深さ・感じ方など）',
-  '外気浴・休憩スペースはどうでしたか？',
-  '混み具合・滞在時間はどうでしたか？',
-  '全体的な感想・おすすめポイントは？',
-];
-
-// ── Password gate + Face ID ────────────────────────────────────────────────
+// ════════════════════════════════════════
+// GATE
+// ════════════════════════════════════════
 (function() {
   const gate = document.getElementById('gate');
   const pwScreen = document.getElementById('pw-screen');
   const faceOffer = document.getElementById('faceid-offer');
   const faceAuth = document.getElementById('faceid-auth');
-  const gateInput = document.getElementById('gateInput');
-  const gateBtn = document.getElementById('gateBtn');
-  const gateError = document.getElementById('gateError');
 
   function isWebAuthnAvailable() {
     return !!(window.PublicKeyCredential && navigator.credentials?.create);
@@ -515,44 +334,36 @@ const QUESTIONS = [
 
   function unlockApp(pw) {
     sessionStorage.setItem('admin_secret', pw);
-    document.getElementById('secret').value = pw;
     gate.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
   }
 
-  // セッション保存済みならそのまま開く
   const saved = sessionStorage.getItem('admin_secret');
-  if (saved) {
-    unlockApp(saved);
-    return;
-  }
+  if (saved) { unlockApp(saved); return; }
 
-  // Face ID登録済みなら認証画面を表示
-  if (localStorage.getItem('sauna_credentialId') && isWebAuthnAvailable()) {
+  if (localStorage.getItem('sauna_credId') && isWebAuthnAvailable()) {
     pwScreen.style.display = 'none';
     faceAuth.style.display = 'block';
-    setTimeout(() => authWithFaceId(), 400);
-  } else {
-    gateInput.focus();
+    setTimeout(authFaceId, 400);
   }
 
-  // ── パスワード認証 ──
-  async function tryUnlock() {
+  // ── Password ──
+  const gateInput = document.getElementById('gateInput');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateError = document.getElementById('gateError');
+
+  async function tryPw() {
     const pw = gateInput.value.trim();
     if (!pw) return;
     gateBtn.disabled = true;
     gateBtn.textContent = '確認中…';
     gateError.textContent = '';
     try {
-      const res = await fetch('/api/auth-check', {
-        method: 'POST',
-        headers: { 'x-api-secret': pw },
-      });
-      if (res.ok) {
-        // Face ID未登録で対応端末なら登録オファー
-        if (!localStorage.getItem('sauna_credentialId') && isWebAuthnAvailable()) {
+      const r = await fetch('/api/auth-check', { method: 'POST', headers: { 'x-api-secret': pw } });
+      if (r.ok) {
+        localStorage.setItem('sauna_savedPw', pw);
+        if (!localStorage.getItem('sauna_credId') && isWebAuthnAvailable()) {
           sessionStorage.setItem('admin_secret', pw);
-          document.getElementById('secret').value = pw;
-          localStorage.setItem('sauna_savedPw', pw);
           pwScreen.style.display = 'none';
           faceOffer.style.display = 'block';
         } else {
@@ -564,80 +375,59 @@ const QUESTIONS = [
         gateInput.focus();
       }
     } catch (_) {
-      gateError.textContent = '通信エラー。再試行してください。';
+      gateError.textContent = '通信エラー';
     } finally {
       gateBtn.disabled = false;
       gateBtn.textContent = '入る';
     }
   }
-
-  gateBtn.addEventListener('click', tryUnlock);
-  gateInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+  gateBtn.addEventListener('click', tryPw);
+  gateInput.addEventListener('keydown', e => e.key === 'Enter' && tryPw());
+  gateInput.focus();
 
   // ── Face ID 登録 ──
   document.getElementById('registerFaceIdBtn').addEventListener('click', async () => {
     try {
-      const challenge = crypto.getRandomValues(new Uint8Array(32));
-      const credential = await navigator.credentials.create({
-        publicKey: {
-          challenge,
-          rp: { name: 'サウナ管理', id: location.hostname },
-          user: {
-            id: crypto.getRandomValues(new Uint8Array(16)),
-            name: 'admin',
-            displayName: '管理者',
-          },
-          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-          authenticatorSelection: {
-            authenticatorAttachment: 'platform',
-            userVerification: 'required',
-          },
-          timeout: 60000,
-        },
-      });
-      const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-      localStorage.setItem('sauna_credentialId', credId);
-      gate.style.display = 'none';
-    } catch (_) {
-      // キャンセルされたらそのまま開く
-      gate.style.display = 'none';
-    }
+      const cred = await navigator.credentials.create({ publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'サウナ管理', id: location.hostname },
+        user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'admin', displayName: '管理者' },
+        pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
+        timeout: 60000,
+      }});
+      localStorage.setItem('sauna_credId', btoa(String.fromCharCode(...new Uint8Array(cred.rawId))));
+    } catch (_) {}
+    gate.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
   });
-
   document.getElementById('skipFaceIdBtn').addEventListener('click', () => {
     gate.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
   });
 
   // ── Face ID 認証 ──
-  async function authWithFaceId() {
-    const credId = localStorage.getItem('sauna_credentialId');
+  async function authFaceId() {
+    const credId = localStorage.getItem('sauna_credId');
     if (!credId) { showPwFallback(); return; }
     try {
       document.getElementById('faceid-status').textContent = '認証中…';
-      const challenge = crypto.getRandomValues(new Uint8Array(32));
-      await navigator.credentials.get({
-        publicKey: {
-          challenge,
-          rpId: location.hostname,
-          allowCredentials: [{
-            type: 'public-key',
-            id: Uint8Array.from(atob(credId), c => c.charCodeAt(0)),
-          }],
-          userVerification: 'required',
-          timeout: 60000,
-        },
-      });
-      const savedPw = localStorage.getItem('sauna_savedPw');
-      if (!savedPw) { showPwFallback(); return; }
-      unlockApp(savedPw);
+      await navigator.credentials.get({ publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        allowCredentials: [{ type: 'public-key', id: Uint8Array.from(atob(credId), c => c.charCodeAt(0)) }],
+        userVerification: 'required',
+        timeout: 60000,
+      }});
+      const pw = localStorage.getItem('sauna_savedPw');
+      if (!pw) { showPwFallback(); return; }
+      unlockApp(pw);
     } catch (_) {
-      document.getElementById('faceid-status').textContent = '認証に失敗しました';
+      document.getElementById('faceError').textContent = '認証に失敗しました';
       showPwFallback();
     }
   }
-
-  document.getElementById('authFaceIdBtn').addEventListener('click', authWithFaceId);
-
+  document.getElementById('authFaceIdBtn').addEventListener('click', authFaceId);
   document.getElementById('fallbackPwBtn').addEventListener('click', showPwFallback);
 
   function showPwFallback() {
@@ -647,51 +437,40 @@ const QUESTIONS = [
   }
 })();
 
-// ── State ──────────────────────────────────────────────────────────────────
-let receiptBase64 = null;
-let photoBase64List = [];
-let recognizing = false;
-let activeRecognition = null;
+// ════════════════════════════════════════
+// APP
+// ════════════════════════════════════════
 
-// ── Init ───────────────────────────────────────────────────────────────────
+// ── State ──
+let photoList = []; // [{ base64, caption }]
+let thumbnailBase64 = null;
+let voiceRecognition = null;
+const hasSpeech = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+// ── Init ──
 document.getElementById('visitDate').valueAsDate = new Date();
+if (!hasSpeech) {
+  document.getElementById('voiceBtn').style.display = 'none';
+  document.getElementById('noVoiceNote').style.display = 'block';
+}
 
-// Build Q&A
-const qaList = document.getElementById('qaList');
-const hasSpeech = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
-if (!hasSpeech) document.getElementById('noVoiceMsg').style.display = 'block';
-
-QUESTIONS.forEach((q, i) => {
-  const n = i + 1;
-  const div = document.createElement('div');
-  div.className = 'qa-item';
-  div.innerHTML = `
-    <div class="qa-label">Q${n}. ${q}</div>
-    <div class="qa-input-row">
-      <textarea id="a${n}" placeholder="（音声入力またはテキスト入力）"></textarea>
-      ${hasSpeech ? `<button class="voice-btn" data-q="${n}" title="音声入力">🎤</button>` : ''}
-    </div>
-  `;
-  qaList.appendChild(div);
-});
-
-// ── Image compression ──────────────────────────────────────────────────────
-function compressImage(file, maxPx = 1200, quality = 0.75) {
+// ── Image compression ──
+function compress(file, maxPx = 1200, q = 0.75) {
   return new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => {
-          const r2 = new FileReader();
-          r2.onload = ev => resolve(ev.target.result.split(',')[1]); // base64 only
-          r2.readAsDataURL(blob);
-        }, 'image/jpeg', quality);
+        const s = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * s);
+        c.height = Math.round(img.height * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(blob => {
+          const r = new FileReader();
+          r.onload = ev => resolve(ev.target.result.split(',')[1]);
+          r.readAsDataURL(blob);
+        }, 'image/jpeg', q);
       };
       img.src = e.target.result;
     };
@@ -699,234 +478,224 @@ function compressImage(file, maxPx = 1200, quality = 0.75) {
   });
 }
 
-// ── Receipt ────────────────────────────────────────────────────────────────
+// ── Receipt OCR ──
 document.getElementById('receiptInput').addEventListener('change', async e => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const b64 = await compressImage(file, 1600, 0.8);
-  receiptBase64 = b64;
-
-  const preview = document.getElementById('receiptPreview');
-  const img = document.getElementById('receiptImg');
-  img.src = 'data:image/jpeg;base64,' + b64;
-  preview.style.display = 'block';
-
-  document.getElementById('receiptUpload').style.display = 'none';
-  runOcr(b64);
+  const file = e.target.files[0]; if (!file) return;
+  const b64 = await compress(file, 1600, 0.8);
+  document.getElementById('receiptImg').src = 'data:image/jpeg;base64,' + b64;
+  document.getElementById('receiptPreview').style.display = 'block';
+  document.getElementById('receiptZone').style.display = 'none';
+  doOcr(b64);
 });
-
 document.getElementById('receiptRemove').addEventListener('click', () => {
-  receiptBase64 = null;
   document.getElementById('receiptPreview').style.display = 'none';
-  document.getElementById('receiptUpload').style.display = 'block';
+  document.getElementById('receiptZone').style.display = 'block';
   document.getElementById('receiptInput').value = '';
-  setOcrStatus('', '');
+  setOcr('', '');
 });
-
-async function runOcr(b64) {
-  const secret = document.getElementById('secret').value.trim();
-  setOcrStatus('読み取り中…', 'loading');
-
+async function doOcr(b64) {
+  const secret = sessionStorage.getItem('admin_secret');
+  setOcr('読み取り中…', 'loading');
   try {
-    const res = await fetch('/api/ocr-receipt', {
+    const r = await fetch('/api/ocr-receipt', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-secret': secret,
-      },
+      headers: { 'Content-Type': 'application/json', 'x-api-secret': secret },
       body: JSON.stringify({ image: b64 }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'OCRエラー');
-
-    if (data.saunaName) {
-      document.getElementById('saunaName').value = data.saunaName;
-    }
-    if (data.date) {
-      document.getElementById('visitDate').value = data.date;
-    }
-    setOcrStatus(
-      `✓ 読み取り完了${data.saunaName ? '：' + data.saunaName : ''}`,
-      'success'
-    );
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    if (d.saunaName) document.getElementById('saunaName').value = d.saunaName;
+    if (d.date) document.getElementById('visitDate').value = d.date;
+    setOcr('✓ 読み取り完了' + (d.saunaName ? '：' + d.saunaName : ''), 'ok');
   } catch (err) {
-    setOcrStatus('読み取り失敗。手動で入力してください。', 'error');
+    setOcr('読み取り失敗。手動で入力してください。', 'err');
   }
 }
-
-function setOcrStatus(msg, cls) {
-  const el = document.getElementById('ocrStatus');
+function setOcr(msg, cls) {
+  const el = document.getElementById('ocrMsg');
   el.textContent = msg;
-  el.className = 'ocr-status' + (cls ? ' ' + cls : '');
+  el.className = 'ocr-msg' + (cls ? ' ' + cls : '');
 }
 
-// ── Photos ─────────────────────────────────────────────────────────────────
+// ── Photos ──
 document.getElementById('photoInput').addEventListener('change', async e => {
-  const files = Array.from(e.target.files);
-  for (const file of files) {
-    if (photoBase64List.length >= 5) break;
-    const b64 = await compressImage(file, 1200, 0.75);
-    photoBase64List.push(b64);
+  for (const file of Array.from(e.target.files)) {
+    if (photoList.length >= 5) break;
+    const b64 = await compress(file);
+    photoList.push({ base64: b64, caption: '' });
   }
   e.target.value = '';
-  renderPhotoGrid();
+  renderPhotos();
 });
 
-function renderPhotoGrid() {
-  const grid = document.getElementById('photoGrid');
-  grid.innerHTML = '';
-
-  photoBase64List.forEach((b64, i) => {
-    const thumb = document.createElement('div');
-    thumb.className = 'photo-thumb';
-    thumb.innerHTML = `
-      <img src="data:image/jpeg;base64,${b64}" />
-      <button class="remove-btn" data-i="${i}">✕</button>
+function renderPhotos() {
+  const list = document.getElementById('photoList');
+  list.innerHTML = '';
+  photoList.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'photo-row';
+    row.innerHTML = `
+      <div class="photo-thumb-sm">
+        <img src="data:image/jpeg;base64,${p.base64}" />
+        <button class="remove-fab" data-i="${i}">✕</button>
+      </div>
+      <input class="photo-caption-input" type="text" placeholder="例：サウナ室" value="${p.caption}" data-i="${i}" />
     `;
-    grid.appendChild(thumb);
+    list.appendChild(row);
   });
-
-  if (photoBase64List.length < 5) {
-    const addBtn = document.createElement('button');
-    addBtn.className = 'add-photo-btn';
-    addBtn.id = 'addPhotoBtn';
-    addBtn.innerHTML = `<input type="file" accept="image/*" multiple id="photoInput" />＋`;
-    grid.appendChild(addBtn);
-    document.getElementById('photoInput').addEventListener('change', async e => {
-      const files = Array.from(e.target.files);
-      for (const file of files) {
-        if (photoBase64List.length >= 5) break;
-        const b64 = await compressImage(file, 1200, 0.75);
-        photoBase64List.push(b64);
-      }
-      e.target.value = '';
-      renderPhotoGrid();
-    });
-  }
-
-  grid.querySelectorAll('.remove-btn[data-i]').forEach(btn => {
+  // イベント
+  list.querySelectorAll('.remove-fab[data-i]').forEach(btn => {
     btn.addEventListener('click', () => {
-      photoBase64List.splice(parseInt(btn.dataset.i), 1);
-      renderPhotoGrid();
+      photoList.splice(parseInt(btn.dataset.i), 1);
+      renderPhotos();
     });
   });
-}
-
-// ── Voice input ────────────────────────────────────────────────────────────
-if (hasSpeech) {
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('.voice-btn');
-    if (!btn) return;
-    const qNum = btn.dataset.q;
-    const textarea = document.getElementById('a' + qNum);
-    toggleVoice(btn, textarea);
+  list.querySelectorAll('.photo-caption-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      photoList[parseInt(inp.dataset.i)].caption = inp.value;
+    });
   });
+  // 5枚上限で追加ボタン表示制御
+  document.getElementById('addPhotoRow').style.display = photoList.length >= 5 ? 'none' : 'flex';
 }
 
-function toggleVoice(btn, textarea) {
-  if (activeRecognition) {
-    activeRecognition.stop();
-    activeRecognition = null;
-    btn.classList.remove('recording');
+// ── Voice ──
+document.getElementById('voiceBtn').addEventListener('click', () => {
+  if (voiceRecognition) {
+    voiceRecognition.stop();
+    voiceRecognition = null;
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceBtn').textContent = '🎤 音声入力';
     return;
   }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new SR();
+  r.lang = 'ja-JP'; r.continuous = false; r.interimResults = false;
+  r.onstart = () => {
+    voiceRecognition = r;
+    document.getElementById('voiceBtn').classList.add('recording');
+    document.getElementById('voiceBtn').textContent = '⏹ 停止';
+  };
+  r.onresult = e => {
+    const t = e.results[0][0].transcript;
+    const ta = document.getElementById('comment');
+    ta.value = ta.value ? ta.value + '　' + t : t;
+  };
+  r.onend = () => {
+    voiceRecognition = null;
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceBtn').textContent = '🎤 音声入力';
+  };
+  r.onerror = () => r.onend();
+  r.start();
+});
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
-  recognition.lang = 'ja-JP';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  recognition.onstart = () => {
-    btn.classList.add('recording');
-    activeRecognition = recognition;
-  };
-  recognition.onresult = e => {
-    const transcript = e.results[0][0].transcript;
-    textarea.value = textarea.value
-      ? textarea.value + '　' + transcript
-      : transcript;
-  };
-  recognition.onend = () => {
-    btn.classList.remove('recording');
-    activeRecognition = null;
-  };
-  recognition.onerror = () => {
-    btn.classList.remove('recording');
-    activeRecognition = null;
-  };
-  recognition.start();
-}
-
-// ── Submit ─────────────────────────────────────────────────────────────────
-document.getElementById('submitBtn').addEventListener('click', async () => {
+// ── Generate ──
+document.getElementById('generateBtn').addEventListener('click', async () => {
   const saunaName = document.getElementById('saunaName').value.trim();
-  const visitDate = document.getElementById('visitDate').value;
-  const secret = document.getElementById('secret').value.trim();
-
-  if (!saunaName) return alert('施設名を入力してください');
-  if (!secret) return alert('パスワードを入力してください');
-
-  const answers = {};
-  QUESTIONS.forEach((_, i) => {
-    answers[`q${i + 1}`] = document.getElementById('a' + (i + 1)).value.trim();
-  });
-
-  const submitBtn = document.getElementById('submitBtn');
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="spinner"></span>生成中（30〜60秒）…';
-  hideError();
-  document.getElementById('resultCard').style.display = 'none';
+  if (!saunaName) { alert('施設名を入力してください'); return; }
+  const secret = sessionStorage.getItem('admin_secret');
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>生成中（30〜60秒）…';
+  document.getElementById('draft-section').style.display = 'none';
+  document.getElementById('publish-result').style.display = 'none';
+  hideErr('errBanner');
 
   try {
-    const res = await fetch('/api/generate-post', {
+    const r = await fetch('/api/generate-post', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-secret': secret,
-      },
+      headers: { 'Content-Type': 'application/json', 'x-api-secret': secret },
       body: JSON.stringify({
         saunaName,
-        visitDate,
-        answers,
-        images: photoBase64List,
+        visitDate: document.getElementById('visitDate').value,
+        saunaIkitaiUrl: document.getElementById('saunaUrl').value.trim(),
+        photoCaptions: photoList.map(p => p.caption).filter(Boolean),
+        comment: document.getElementById('comment').value.trim(),
       }),
     });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || '生成エラー');
-
-    document.getElementById('prLink').href = data.prUrl;
-    document.getElementById('draftContent').textContent = data.draft;
-    document.getElementById('resultCard').style.display = 'block';
-    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
-
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    document.getElementById('draftArea').value = d.draft;
+    document.getElementById('draft-section').style.display = 'block';
+    document.getElementById('draft-section').scrollIntoView({ behavior: 'smooth' });
   } catch (err) {
-    showError(err.message);
+    showErr('errBanner', err.message);
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = '✨ 下書きを生成する';
+    btn.disabled = false;
+    btn.textContent = '✨ 下書きを生成する';
   }
 });
 
-// Copy draft
-document.getElementById('copyBtn').addEventListener('click', () => {
-  const text = document.getElementById('draftContent').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    document.getElementById('copyBtn').textContent = '✅ コピー完了';
-    setTimeout(() => { document.getElementById('copyBtn').textContent = '📋 コピー'; }, 2000);
+// ── Thumbnail ──
+document.getElementById('thumbInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  thumbnailBase64 = await compress(file, 1200, 0.8);
+  document.getElementById('thumbImg').src = 'data:image/jpeg;base64,' + thumbnailBase64;
+  document.getElementById('thumbPreview').style.display = 'block';
+  document.getElementById('thumbZone').style.display = 'none';
+});
+document.getElementById('thumbRemove').addEventListener('click', () => {
+  thumbnailBase64 = null;
+  document.getElementById('thumbPreview').style.display = 'none';
+  document.getElementById('thumbZone').style.display = 'block';
+  document.getElementById('thumbInput').value = '';
+});
+
+// ── Copy draft ──
+document.getElementById('copyDraftBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(document.getElementById('draftArea').value).then(() => {
+    document.getElementById('copyDraftBtn').textContent = '✅ コピー完了';
+    setTimeout(() => { document.getElementById('copyDraftBtn').textContent = '📋 Markdownをコピー'; }, 2000);
   });
 });
 
-function showError(msg) {
-  const el = document.getElementById('errorCard');
+// ── Publish ──
+document.getElementById('publishBtn').addEventListener('click', async () => {
+  const saunaName = document.getElementById('saunaName').value.trim();
+  const draft = document.getElementById('draftArea').value.trim();
+  if (!draft) { alert('下書きが空です'); return; }
+  const secret = sessionStorage.getItem('admin_secret');
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>投稿中…';
+  hideErr('publishErr');
+
+  try {
+    const r = await fetch('/api/publish-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-secret': secret },
+      body: JSON.stringify({
+        draft,
+        saunaName,
+        visitDate: document.getElementById('visitDate').value,
+        photos: photoList.map(p => p.base64),
+        thumbnail: thumbnailBase64,
+      }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    document.getElementById('blogLink').href = d.blogUrl;
+    document.getElementById('draft-section').style.display = 'none';
+    document.getElementById('publish-result').style.display = 'block';
+    document.getElementById('publish-result').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    showErr('publishErr', err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 投稿する';
+  }
+});
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
   el.textContent = '❌ ' + msg;
   el.style.display = 'block';
-  el.scrollIntoView({ behavior: 'smooth' });
 }
-function hideError() {
-  document.getElementById('errorCard').style.display = 'none';
+function hideErr(id) {
+  const el = document.getElementById(id);
+  el.textContent = '';
+  el.style.display = 'none';
 }
 </script>
 </body>
