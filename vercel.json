@@ -9,6 +9,12 @@
   "functions": {
     "api/webhook.js": {
       "maxDuration": 60
+    },
+    "api/generate-post.js": {
+      "maxDuration": 60
+    },
+    "api/ocr-receipt.js": {
+      "maxDuration": 30
     }
   }
 }
