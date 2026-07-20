@@ -13,7 +13,19 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+
+const allPosts = (await getCollection('blog'))
+  .filter(p => p.slug !== post.slug && p.slug !== 'example')
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const relatedPosts = (() => {
+  const same = allPosts.filter(p => p.data.category === post.data.category).slice(0, 3);
+  if (same.length >= 3) return same;
+  return [...same, ...allPosts.filter(p => p.data.category !== post.data.category).slice(0, 3 - same.length)];
+})();
+
+const tocHeadings = headings.filter(h => h.depth === 2);
 
 const siteUrl = 'https://tsuyoshishirota.com';
 const pageUrl = `${siteUrl}/blog/${post.slug}`;
@@ -67,13 +79,23 @@ const reviewLd = {
     worstRating: 1,
   },
   author: {
-    '@type': 'Person',
-    name: 'Tsuyoshi Shirota',
+    '@type': 'Organization',
+    name: 'tsuyoshishirota.com',
     url: siteUrl,
   },
   reviewBody: post.data.excerpt,
   url: pageUrl,
   datePublished: post.data.date.toISOString(),
+};
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'ホーム', item: siteUrl },
+    { '@type': 'ListItem', position: 2, name: 'ブログ', item: `${siteUrl}/blog` },
+    { '@type': 'ListItem', position: 3, name: post.data.title, item: pageUrl },
+  ],
 };
 ---
 
@@ -87,9 +109,19 @@ const reviewLd = {
   jsonLd={jsonLd}
 >
   <script type="application/ld+json" set:html={JSON.stringify(reviewLd)} slot="head" />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} slot="head" />
   <Header slot="header" />
 
   <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- パンくずリスト -->
+    <nav aria-label="パンくずリスト" class="mb-6 text-sm text-gray-500 flex items-center gap-2">
+      <a href="/" class="hover:text-blue-600 transition-colors">ホーム</a>
+      <span>/</span>
+      <a href="/blog" class="hover:text-blue-600 transition-colors">ブログ</a>
+      <span>/</span>
+      <span class="text-gray-700 line-clamp-1">{post.data.title}</span>
+    </nav>
+
     <div class="mb-8">
       <div class="flex items-center gap-3 mb-4">
         <span class="text-sm font-medium px-3 py-1 bg-blue-50 text-blue-600 rounded-full">
@@ -105,12 +137,28 @@ const reviewLd = {
       <div class="aspect-video rounded-xl overflow-hidden bg-gray-100">
         <img
           src={post.data.coverImage}
-          alt={post.data.title}
+          alt={`${post.data.facilityName || post.data.title}のサウナ施設写真`}
           class="w-full h-full object-cover"
           onerror="this.src='/images/placeholder.jpg'"
         />
       </div>
     </div>
+
+    <!-- 目次 -->
+    {tocHeadings.length >= 3 && (
+      <nav aria-label="目次" class="mb-10 p-5 bg-gray-50 rounded-xl border border-gray-200">
+        <p class="text-sm font-bold text-gray-700 mb-3">目次</p>
+        <ol class="space-y-1 list-decimal list-inside">
+          {tocHeadings.map(h => (
+            <li>
+              <a href={`#${h.slug}`} class="text-sm text-blue-600 hover:underline">
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
 
     <div class="prose prose-gray max-w-none
       prose-headings:font-bold prose-headings:text-gray-900
@@ -121,7 +169,35 @@ const reviewLd = {
       <Content />
     </div>
 
-    <div class="mt-12 pt-8 border-t border-gray-200">
+    <!-- 関連記事 -->
+    {relatedPosts.length > 0 && (
+      <div class="mt-16 pt-10 border-t border-gray-200">
+        <h2 class="text-lg font-bold text-gray-900 mb-6">関連記事</h2>
+        <div class="grid gap-4 sm:grid-cols-3">
+          {relatedPosts.map(p => (
+            <a href={`/blog/${p.slug}`} class="group block rounded-xl overflow-hidden border border-gray-200 hover:border-blue-300 transition-colors">
+              <div class="aspect-video overflow-hidden bg-gray-100">
+                <img
+                  src={p.data.coverImage}
+                  alt={`${p.data.facilityName || p.data.title}のサウナ施設写真`}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onerror="this.src='/images/placeholder.jpg'"
+                  loading="lazy"
+                />
+              </div>
+              <div class="p-3">
+                <span class="text-xs text-blue-600 font-medium">{p.data.category}</span>
+                <p class="text-sm font-semibold text-gray-800 mt-1 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                  {p.data.title}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <div class="mt-10 pt-8 border-t border-gray-200">
       <a
         href="/blog"
         class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"

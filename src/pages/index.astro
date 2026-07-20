@@ -11,11 +11,22 @@ const posts = (await getCollection('blog'))
 
 const featured = posts[0];
 const recentPosts = posts.slice(1, 7);
+
+const siteUrl = 'https://tsuyoshishirota.com';
+const websiteLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'tsuyoshishirota.com',
+  url: siteUrl,
+  description: '全国のサウナ施設を巡り、本音のレビューをお届けするサウナブログ。施設情報・料金・アクセスを徹底解説。',
+  inLanguage: 'ja',
+};
 ---
 
 <BaseLayout
   title="Sauna Pon Blog | 全国サウナ施設レビュー&最新情報"
   description="全国のサウナ施設を巡り、本音のレビューをお届けするサウナブログ。施設情報・料金・アクセスを徹底解説。"
+  jsonLd={websiteLd}
 >
   <Header slot="header" />
 
