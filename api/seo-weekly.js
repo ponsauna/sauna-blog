@@ -190,6 +190,16 @@ ${topQueries.length ? topQueries.join('\n') : 'データなし'}
         continue;
       }
 
+      // 不適切なキーワードが含まれている場合はスキップ
+      const blockedTerms = ['ゲイ', 'ハッテン', 'ゲイサウナ', 'アダルト', '出会い', '風俗'];
+      const hasBlockedTerm = blockedTerms.some(term =>
+        optimized.title.includes(term) || optimized.excerpt.includes(term)
+      );
+      if (hasBlockedTerm) {
+        skipped.push({ url: page.url, reason: 'blocked_content' });
+        continue;
+      }
+
       const updatedContent = content
         .replace(/^title:.*$/m, `title: "${optimized.title.replace(/"/g, '\\"')}"`)
         .replace(/^excerpt:.*$/m, `excerpt: "${optimized.excerpt.replace(/"/g, '\\"')}"`);
