@@ -120,7 +120,7 @@ export default async function handler(req, res) {
     const skipped = [];
 
     for (const page of toFix) {
-      const slug = page.url.replace(SITE_URL + 'blog/', '').replace(/\/$/, '');
+      const slug = decodeURIComponent(page.url.replace(SITE_URL + 'blog/', '').replace(/\/$/, ''));
 
       const file = files.find(f => {
         const name = f.name.replace('.md', '');
