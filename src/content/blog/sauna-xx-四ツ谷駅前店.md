@@ -1,9 +1,9 @@
 ---
-title: "SAUNA XX 四ツ谷駅前店|ゲイサウナの完全レビュー・料金・ハッテン情報"
+title: "SAUNA XX 四ツ谷駅前店"
 date: 2023-12-21
 category: "サウナ"
 coverImage: "/images/968f4a_0814c76befbd4f748cddf14593d93d8d~mv2.png"
-excerpt: "SAUNA XX四ツ谷駅前店のゲイサウナ完全ガイド。ハッテン情報、料金、アクセス、口コミレビューを網羅。サウナエックスの魅力とダイナミックプライシング、LINE精算など利用前に必要な全情報を解説します。"
+excerpt: "四ツ谷駅前の次世代型サウナ「SAUNA XX」を徹底レビュー。待ち時間ゼロのダイナミックプライシング・LINE自動精算など、忙しい現代人のサウナ習慣をスマートにサポート。"
 rating: 5
 facilityName: "サウナXX 四ツ谷駅前店"
 ---
