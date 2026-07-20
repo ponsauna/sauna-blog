@@ -22,11 +22,15 @@ async function queryGSC(sc, startDate, endDate, dimensions, pageFilter) {
 
 async function postSlack(webhookUrl, blocks, text) {
   if (!webhookUrl) return;
-  await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, blocks }),
-  });
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, blocks }),
+    });
+  } catch (e) {
+    console.error('Slack通知エラー:', e.message);
+  }
 }
 
 export default async function handler(req, res) {
@@ -334,7 +338,7 @@ ${topQueries.length ? topQueries.join('\n') : 'データなし'}
     });
 
   } catch (err) {
-    console.error('seo-weekly error:', err);
+    console.error('seo-weekly error:', err.message, err.stack);
 
     await postSlack(SLACK_WEBHOOK, [{
       type: 'section',
