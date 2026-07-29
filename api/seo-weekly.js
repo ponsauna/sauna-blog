@@ -22,14 +22,18 @@ async function queryGSC(sc, startDate, endDate, dimensions, pageFilter) {
 
 async function postSlack(webhookUrl, blocks, text) {
   if (!webhookUrl) return;
-  try {
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, blocks }),
-    });
-  } catch (e) {
-    console.error('Slack通知エラー:', e.message);
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, blocks }),
+      });
+      if (res.ok) return;
+      console.error(`Slack通知失敗（試行${attempt}, status=${res.status}）:`, await res.text());
+    } catch (e) {
+      console.error(`Slack通知エラー（試行${attempt}）:`, e.message);
+    }
   }
 }
 
