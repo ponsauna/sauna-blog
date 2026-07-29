@@ -36,7 +36,10 @@ async function postSlack(webhookUrl, blocks, text) {
 export default async function handler(req, res) {
   const secret = req.headers['x-api-secret']
     || req.headers['authorization']?.replace('Bearer ', '');
-  if (secret !== process.env.WEBHOOK_SECRET?.trim()) {
+  // Vercel Cronは CRON_SECRET を Authorization: Bearer で自動付与する
+  const isCronRequest = !!secret && secret === process.env.CRON_SECRET?.trim();
+  const isAuthorized = isCronRequest || secret === process.env.WEBHOOK_SECRET?.trim();
+  if (!isAuthorized) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -88,8 +91,8 @@ export default async function handler(req, res) {
       ? (currRows.reduce((s, r) => s + r.ctr, 0) / currRows.length * 100).toFixed(1)
       : '0.0';
 
-    // GET = レポートのみ
-    if (req.method === 'GET') {
+    // GET = レポートのみ（Vercel CronはGETしか送れないため、cronリクエストは本処理まで実行する）
+    if (req.method === 'GET' && !isCronRequest) {
       return res.status(200).json({
         period: { curr: [currStart, currEnd], prev: [prevStart, prevEnd] },
         summary: { totalClicks, totalImpressions, avgCtr },
