@@ -43,11 +43,18 @@ export default async function handler(req, res) {
   // Vercel Cronは CRON_SECRET を Authorization: Bearer で自動付与する
   const isCronRequest = !!secret && secret === process.env.CRON_SECRET?.trim();
   const isAuthorized = isCronRequest || secret === process.env.WEBHOOK_SECRET?.trim();
+  const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK_URL?.trim();
+
   if (!isAuthorized) {
+    // cronからの呼び出しだけ通知（外部からの無認証アクセスで毎回鳴らないように）
+    if (req.headers['user-agent']?.includes('vercel-cron')) {
+      await postSlack(SLACK_WEBHOOK, [{
+        type: 'section',
+        text: { type: 'mrkdwn', text: '*❌ SEO自動化が認証エラーで止まっています*\n`WEBHOOK_SECRET`または`CRON_SECRET`の設定を確認してください。' },
+      }], '社長、SEO自動化が認証エラーで止まっています。確認をお願いします。');
+    }
     return res.status(401).json({ error: 'Unauthorized' });
   }
-
-  const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK_URL?.trim();
 
   try {
     // ── Google Search Console 認証 ─────────────────────────────────
