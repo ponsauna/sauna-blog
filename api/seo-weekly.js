@@ -40,14 +40,16 @@ async function postSlack(webhookUrl, blocks, text) {
 export default async function handler(req, res) {
   const secret = req.headers['x-api-secret']
     || req.headers['authorization']?.replace('Bearer ', '');
-  // Vercel Cronは CRON_SECRET を Authorization: Bearer で自動付与する
-  const isCronRequest = !!secret && secret === process.env.CRON_SECRET?.trim();
-  const isAuthorized = isCronRequest || secret === process.env.WEBHOOK_SECRET?.trim();
+  const isAuthorized = secret === process.env.WEBHOOK_SECRET?.trim()
+    || (!!secret && secret === process.env.CRON_SECRET?.trim());
+  // 本物のVercel Cronだけが送るUser-Agentで判定する（secretの一致では判定しない。
+  // WEBHOOK_SECRETとCRON_SECRETが同値の場合、手動GETまで書き込み処理に入ってしまうため）
+  const isCronRequest = !!req.headers['user-agent']?.includes('vercel-cron');
   const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK_URL?.trim();
 
   if (!isAuthorized) {
     // cronからの呼び出しだけ通知（外部からの無認証アクセスで毎回鳴らないように）
-    if (req.headers['user-agent']?.includes('vercel-cron')) {
+    if (isCronRequest) {
       await postSlack(SLACK_WEBHOOK, [{
         type: 'section',
         text: { type: 'mrkdwn', text: '*❌ SEO自動化が認証エラーで止まっています*\n`WEBHOOK_SECRET`または`CRON_SECRET`の設定を確認してください。' },
