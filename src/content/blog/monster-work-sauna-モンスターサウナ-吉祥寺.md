@@ -1,9 +1,9 @@
 ---
-title: "MONSTER WORK&SAUNA -モンスターサウナ 吉祥寺"
+title: "モンスターサウナ吉祥寺の利用体験｜施設情報と特徴"
 date: 2023-12-27
 category: "サウナ"
 coverImage: "/images/968f4a_4a9ed1d48fd540bbae9d61b28b031046~mv2.png"
-excerpt: "吉祥寺駅徒歩2分、100人収容の巨大サウナ「MONSTER WORK&SAUNA」を徹底レビュー。プールのような大型水風呂・ワークスペース完備で、サウナ好きもビジネスマンも大満足。"
+excerpt: "吉祥寺駅徒歩2分のMONSTER WORK&SAUNAは100人収容の大型サウナ施設。大きな水風呂とワークスペースを備え、サウナ利用者とビジネスマンの両方に対応しています。"
 rating: 5
 facilityName: "モンスターワークサウナ吉祥寺"
 ---
