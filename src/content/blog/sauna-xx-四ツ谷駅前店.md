@@ -1,9 +1,9 @@
 ---
-title: "SAUNA XX 四ツ谷駅前店｜設備・料金・アクセス情報"
+title: "SAUNA XX 四ツ谷駅前店｜料金・営業時間・アクセス"
 date: 2023-12-21
 category: "サウナ"
 coverImage: "/images/968f4a_0814c76befbd4f748cddf14593d93d8d~mv2.png"
-excerpt: "SAUNA XX 四ツ谷駅前店の施設情報をご紹介。ダイナミックプライシングやLINE自動精算など利用システムの特徴、アクセス、営業時間などを掲載しています。"
+excerpt: "SAUNA XX 四ツ谷駅前店の施設詳細。料金体系、営業時間、駅からのアクセス、設備情報を掲載しています。利用方法や来店前の確認に。"
 rating: 5
 facilityName: "サウナXX 四ツ谷駅前店"
 ---
