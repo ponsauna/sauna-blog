@@ -1,5 +1,5 @@
 ---
-title: "【2025年最新】TOTOPA都立明治公園店完全ガイド｜3種のサウナと160cm水風呂を徹底解説"
+title: "TOTOPA都立明治公園店｜3種のサウナと160cm水風呂を解説"
 date: 2024-03-22
 category: "サウナ"
 coverImage: "/images/968f4a_4d646c970d854aae956e3680bb5a2384~mv2.png"

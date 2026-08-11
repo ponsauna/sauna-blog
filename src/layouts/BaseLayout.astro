@@ -7,6 +7,7 @@ interface Props {
   canonicalUrl?: string;
   publishedDate?: string;
   jsonLd?: object;
+  noindex?: boolean;
 }
 
 const {
@@ -17,10 +18,14 @@ const {
   canonicalUrl,
   publishedDate,
   jsonLd,
+  noindex = false,
 } = Astro.props;
 
 const siteUrl = 'https://tsuyoshishirota.com';
-const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
+const normalizedPath = Astro.url.pathname === '/'
+  ? '/'
+  : Astro.url.pathname.replace(/\/+$/, '');
+const canonical = canonicalUrl ?? `${siteUrl}${normalizedPath}`;
 const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 ---
 
@@ -36,7 +41,7 @@ const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogIm
     <!-- Primary Meta -->
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
     <meta name="google-site-verification" content="9ZNZ4_KY6oI7QUnw2bmeqzkRk7vEsZqFxlp1PGBKYCQ" />
 
     <!-- OGP -->

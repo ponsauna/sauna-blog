@@ -6,7 +6,7 @@ import Footer from '../components/Footer.astro';
 import BlogCard from '../components/BlogCard.astro';
 
 const posts = (await getCollection('blog'))
-  .filter((p) => p.slug !== 'example')
+  .filter((p) => p.slug !== 'example' && !p.data.noindex)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const featured = posts[0];

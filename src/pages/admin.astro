@@ -6,6 +6,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>サウナ記事作成</title>
+  <meta name="robots" content="noindex, nofollow, noarchive" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
@@ -309,14 +310,14 @@
     <div class="card" style="margin-top:14px">
       <div class="card-title">📊 SEO ダッシュボード</div>
       <div class="seo-metric" id="seoMetrics" style="display:none">
-        <div class="seo-metric-box"><div class="val" id="seoClicks">–</div><div class="lbl">クリック/28日</div></div>
-        <div class="seo-metric-box"><div class="val" id="seoImpr">–</div><div class="lbl">表示回数</div></div>
-        <div class="seo-metric-box"><div class="val" id="seoCtr">–</div><div class="lbl">平均CTR</div></div>
+        <div class="seo-metric-box"><div class="val" id="seoClicks">–</div><div class="lbl">クリック/7日</div></div>
+        <div class="seo-metric-box"><div class="val" id="seoImpr">–</div><div class="lbl">表示回数/7日</div></div>
+        <div class="seo-metric-box"><div class="val" id="seoCtr">–</div><div class="lbl">加重CTR/7日</div></div>
       </div>
       <div class="seo-btn-row">
         <button class="btn-seo" id="seoReportBtn">📈 レポート取得</button>
-        <button class="btn-seo run" id="seoRunBtn">🔧 今すぐ最適化</button>
       </div>
+      <p style="font-size:12px;color:#888;margin-top:10px">レポート専用です。記事は自動変更されません。</p>
       <div class="seo-result" id="seoResult" style="display:none"></div>
     </div>
 
@@ -679,44 +680,12 @@ document.getElementById('seoReportBtn').addEventListener('click', async () => {
       `${p.url.replace('https://tsuyoshishirota.com/blog/','').replace('/','')}\n  クリック:${p.curr.clicks} 表示:${p.curr.impressions} CTR:${(p.curr.ctr*100).toFixed(1)}% 順位:${p.curr.position.toFixed(1)}`
     ).join('\n\n');
     const result = document.getElementById('seoResult');
-    result.textContent = '【上位5記事】\n' + (top5 || 'データなし');
+    result.textContent = `対象期間: ${d.periods.current7.start}〜${d.periods.current7.end}\n自動変更: 0件\n\n【直近28日の上位5記事】\n` + (top5 || 'データなし');
     result.style.display = 'block';
   } catch (err) {
     alert('エラー: ' + err.message);
   } finally {
     btn.textContent = '📈 レポート取得'; btn.disabled = false;
-  }
-});
-
-document.getElementById('seoRunBtn').addEventListener('click', async () => {
-  if (!confirm('今すぐSEO最適化を実行しますか？\n（問題のある記事のtitle・excerptを書き換えます）')) return;
-  const btn = document.getElementById('seoRunBtn');
-  btn.innerHTML = '<span class="spinner"></span>分析・最適化中…'; btn.disabled = true;
-  const secret = sessionStorage.getItem('admin_secret');
-  try {
-    const r = await fetch('/api/seo-weekly', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-secret': secret },
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error);
-    let text = `✅ 完了 — ${d.analyzed}記事を分析、${d.fixed.length}記事を改善\n`;
-    if (d.fixed.length > 0) {
-      text += '\n【改善した記事】\n';
-      for (const f of d.fixed) {
-        text += `\n▪ ${f.slug}\n旧: ${f.oldTitle}\n新: ${f.newTitle}\n`;
-      }
-      text += '\nSlackに詳細レポートを送りました 📬';
-    } else {
-      text += '改善が必要な記事は見つかりませんでした。';
-    }
-    const result = document.getElementById('seoResult');
-    result.textContent = text;
-    result.style.display = 'block';
-  } catch (err) {
-    alert('エラー: ' + err.message);
-  } finally {
-    btn.textContent = '🔧 今すぐ最適化'; btn.disabled = false;
   }
 });
 

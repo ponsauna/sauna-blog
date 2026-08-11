@@ -16,7 +16,7 @@ const { post } = Astro.props;
 const { Content, headings } = await render(post);
 
 const allPosts = (await getCollection('blog'))
-  .filter(p => p.slug !== post.slug && p.slug !== 'example')
+  .filter(p => p.slug !== post.slug && p.slug !== 'example' && !p.data.noindex)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const relatedPosts = (() => {
@@ -47,11 +47,10 @@ const jsonLd = {
   image: ogImage,
   url: pageUrl,
   datePublished: post.data.date.toISOString(),
-  dateModified: post.data.date.toISOString(),
+  ...(post.data.updatedDate ? { dateModified: post.data.updatedDate.toISOString() } : {}),
   author: {
     '@type': 'Person',
     name: 'Tsuyoshi Shirota',
-    url: siteUrl,
   },
   publisher: {
     '@type': 'Organization',
@@ -62,30 +61,6 @@ const jsonLd = {
     '@type': 'WebPage',
     '@id': pageUrl,
   },
-};
-
-const reviewLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Review',
-  itemReviewed: {
-    '@type': 'LocalBusiness',
-    name: post.data.facilityName || post.data.title,
-    image: ogImage,
-  },
-  reviewRating: {
-    '@type': 'Rating',
-    ratingValue: post.data.rating ?? 5,
-    bestRating: 5,
-    worstRating: 1,
-  },
-  author: {
-    '@type': 'Organization',
-    name: 'tsuyoshishirota.com',
-    url: siteUrl,
-  },
-  reviewBody: post.data.excerpt,
-  url: pageUrl,
-  datePublished: post.data.date.toISOString(),
 };
 
 const breadcrumbLd = {
@@ -100,19 +75,25 @@ const breadcrumbLd = {
 ---
 
 <BaseLayout
-  title={`${post.data.title} | tsuyoshishirota.com`}
+  title={post.data.title}
   description={post.data.excerpt}
   ogImage={post.data.coverImage}
   ogType="article"
   canonicalUrl={pageUrl}
   publishedDate={post.data.date.toISOString()}
   jsonLd={jsonLd}
+  noindex={post.data.noindex}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(reviewLd)} slot="head" />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} slot="head" />
   <Header slot="header" />
 
   <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    {post.data.noindex && (
+      <aside class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+        この記事は現在、掲載内容を再確認しています。施設を利用する前に公式情報をご確認ください。
+      </aside>
+    )}
+
     <!-- パンくずリスト -->
     <nav aria-label="パンくずリスト" class="mb-6 text-sm text-gray-500 flex items-center gap-2">
       <a href="/" class="hover:text-blue-600 transition-colors">ホーム</a>
@@ -130,6 +111,7 @@ const breadcrumbLd = {
         <time class="text-sm text-gray-400" datetime={post.data.date.toISOString()}>
           {formattedDate}
         </time>
+        <span class="text-sm text-gray-400">執筆: Tsuyoshi Shirota</span>
       </div>
       <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
         {post.data.title}

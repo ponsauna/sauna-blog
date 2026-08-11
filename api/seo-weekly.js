@@ -1,65 +1,217 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { BetaAnalyticsDataClient } from '@google-analytics/data';
 import { google } from 'googleapis';
 
-const SITE_URL = 'https://tsuyoshishirota.com/';
+const DEFAULT_SITE_URL = 'https://tsuyoshishirota.com/';
+const DEFAULT_GA4_PROPERTY_ID = '529364809';
+const DATA_DELAY_DAYS = 3;
 
-function dateStr(daysAgo) {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  return d.toISOString().split('T')[0];
+function dateInPacific(daysAgo = 0) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const date = new Date(Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day)));
+  date.setUTCDate(date.getUTCDate() - daysAgo);
+  return date.toISOString().slice(0, 10);
 }
 
-async function queryGSC(sc, startDate, endDate, dimensions, pageFilter) {
-  const body = { startDate, endDate, dimensions, rowLimit: 500 };
-  if (pageFilter) {
-    body.dimensionFilterGroups = [{
-      filters: [{ dimension: 'page', operator: 'equals', expression: pageFilter }],
-    }];
+function shiftDate(isoDate, days) {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function periodEnding(daysAgo, length) {
+  const end = dateInPacific(daysAgo);
+  return { start: shiftDate(end, -(length - 1)), end };
+}
+
+async function queryGSC(sc, siteUrl, startDate, endDate, dimensions = []) {
+  const requestBody = { startDate, endDate, rowLimit: 25000 };
+  if (dimensions.length > 0) requestBody.dimensions = dimensions;
+  const response = await sc.searchanalytics.query({ siteUrl, requestBody });
+  return response.data.rows || [];
+}
+
+function metricFromSummaryRows(rows) {
+  const row = rows[0] || {};
+  return {
+    clicks: row.clicks || 0,
+    impressions: row.impressions || 0,
+    ctr: (row.ctr || 0) * 100,
+    position: row.position || 0,
+  };
+}
+
+function normalizePageUrl(rawUrl, canonicalOrigin) {
+  try {
+    const url = new URL(rawUrl);
+    if (url.origin !== canonicalOrigin) return null;
+    url.hash = '';
+    if (url.pathname !== '/') url.pathname = url.pathname.replace(/\/+$/, '');
+    return url.toString();
+  } catch {
+    return null;
   }
-  const r = await sc.searchanalytics.query({ siteUrl: SITE_URL, requestBody: body });
-  return r.data.rows || [];
+}
+
+function aggregateRows(rows, keyTransform = (key) => key) {
+  const map = new Map();
+  for (const row of rows) {
+    const key = keyTransform(row.keys?.[0] || '');
+    if (!key) continue;
+    const existing = map.get(key) || {
+      key,
+      clicks: 0,
+      impressions: 0,
+      positionWeight: 0,
+    };
+    existing.clicks += row.clicks || 0;
+    existing.impressions += row.impressions || 0;
+    existing.positionWeight += (row.position || 0) * (row.impressions || 0);
+    map.set(key, existing);
+  }
+  return [...map.values()].map((item) => ({
+    key: item.key,
+    clicks: item.clicks,
+    impressions: item.impressions,
+    ctr: item.impressions ? item.clicks / item.impressions : 0,
+    position: item.impressions ? item.positionWeight / item.impressions : 0,
+  }));
+}
+
+function pageComparison(currentRows, previousRows, canonicalOrigin) {
+  const normalize = (url) => normalizePageUrl(url, canonicalOrigin);
+  const current = new Map(aggregateRows(currentRows, normalize).map((row) => [row.key, row]));
+  const previous = new Map(aggregateRows(previousRows, normalize).map((row) => [row.key, row]));
+  const urls = new Set([...current.keys(), ...previous.keys()]);
+
+  return [...urls]
+    .filter((url) => new URL(url).pathname.startsWith('/blog/'))
+    .map((url) => {
+      const curr = current.get(url) || { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+      const prev = previous.get(url) || { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+      return {
+        url,
+        curr,
+        prev,
+        clickDelta: curr.clicks - prev.clicks,
+        impressionDelta: curr.impressions - prev.impressions,
+        ctrDelta: (curr.ctr - prev.ctr) * 100,
+        positionDelta: curr.position && prev.position ? curr.position - prev.position : null,
+      };
+    })
+    .sort((a, b) => b.curr.impressions - a.curr.impressions);
+}
+
+function queryComparison(currentRows, previousRows) {
+  const current = new Map(aggregateRows(currentRows).map((row) => [row.key, row]));
+  const previous = new Map(aggregateRows(previousRows).map((row) => [row.key, row]));
+  const queries = new Set([...current.keys(), ...previous.keys()]);
+  return [...queries]
+    .map((query) => {
+      const curr = current.get(query) || { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+      const prev = previous.get(query) || { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+      return { query, curr, prev, clickDelta: curr.clicks - prev.clicks };
+    })
+    .sort((a, b) => b.curr.impressions - a.curr.impressions);
+}
+
+async function queryOrganicGA4(credentials, propertyId, period) {
+  if (!propertyId) return null;
+  const client = new BetaAnalyticsDataClient({ credentials });
+  const [report] = await client.runReport({
+    property: `properties/${propertyId}`,
+    dateRanges: [{ startDate: period.start, endDate: period.end }],
+    metrics: [
+      { name: 'sessions' },
+      { name: 'totalUsers' },
+      { name: 'screenPageViews' },
+      { name: 'engagedSessions' },
+      { name: 'engagementRate' },
+      { name: 'averageSessionDuration' },
+      { name: 'keyEvents' },
+    ],
+    dimensionFilter: {
+      filter: {
+        fieldName: 'sessionDefaultChannelGroup',
+        stringFilter: { matchType: 'EXACT', value: 'Organic Search' },
+      },
+    },
+  });
+  const values = report.rows?.[0]?.metricValues?.map((metric) => Number(metric.value)) || [];
+  return {
+    sessions: values[0] || 0,
+    users: values[1] || 0,
+    pageViews: values[2] || 0,
+    engagedSessions: values[3] || 0,
+    engagementRate: (values[4] || 0) * 100,
+    averageSessionDuration: values[5] || 0,
+    keyEvents: values[6] || 0,
+  };
+}
+
+function percentChange(current, previous) {
+  if (!previous) return null;
+  return ((current - previous) / previous) * 100;
+}
+
+function formatDelta(current, previous, suffix = '') {
+  const delta = percentChange(current, previous);
+  if (delta === null) return `${current.toLocaleString('ja-JP')}${suffix}（比較不可）`;
+  const sign = delta > 0 ? '+' : '';
+  return `${current.toLocaleString('ja-JP')}${suffix}（${sign}${delta.toFixed(1)}%）`;
+}
+
+function pageLabel(url) {
+  try {
+    return decodeURIComponent(new URL(url).pathname.replace(/^\/blog\//, '')) || url;
+  } catch {
+    return url;
+  }
 }
 
 async function postSlack(webhookUrl, blocks, text) {
   if (!webhookUrl) return;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const res = await fetch(webhookUrl, {
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, blocks }),
       });
-      if (res.ok) return;
-      console.error(`Slack通知失敗（試行${attempt}, status=${res.status}）:`, await res.text());
-    } catch (e) {
-      console.error(`Slack通知エラー（試行${attempt}）:`, e.message);
+      if (response.ok) return;
+      console.error(`Slack通知失敗（試行${attempt}, status=${response.status}）:`, await response.text());
+    } catch (error) {
+      console.error(`Slack通知エラー（試行${attempt}）:`, error.message);
     }
   }
 }
 
 export default async function handler(req, res) {
-  const secret = req.headers['x-api-secret']
-    || req.headers['authorization']?.replace('Bearer ', '');
-  const isAuthorized = secret === process.env.WEBHOOK_SECRET?.trim()
-    || (!!secret && secret === process.env.CRON_SECRET?.trim());
-  // 本物のVercel Cronだけが送るUser-Agentで判定する（secretの一致では判定しない。
-  // WEBHOOK_SECRETとCRON_SECRETが同値の場合、手動GETまで書き込み処理に入ってしまうため）
-  const isCronRequest = !!req.headers['user-agent']?.includes('vercel-cron');
-  const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK_URL?.trim();
+  const webhookSecret = process.env.WEBHOOK_SECRET?.trim();
+  const cronSecret = process.env.CRON_SECRET?.trim();
+  const authorization = req.headers.authorization || '';
+  const isCronRequest = Boolean(cronSecret && authorization === `Bearer ${cronSecret}`);
+  const isManualRequest = Boolean(webhookSecret && req.headers['x-api-secret'] === webhookSecret);
 
-  if (!isAuthorized) {
-    // cronからの呼び出しだけ通知（外部からの無認証アクセスで毎回鳴らないように）
-    if (isCronRequest) {
-      await postSlack(SLACK_WEBHOOK, [{
-        type: 'section',
-        text: { type: 'mrkdwn', text: '*❌ SEO自動化が認証エラーで止まっています*\n`WEBHOOK_SECRET`または`CRON_SECRET`の設定を確認してください。' },
-      }], '社長、SEO自動化が認証エラーで止まっています。確認をお願いします。');
-    }
+  if (!isCronRequest && !isManualRequest) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Method Not Allowed. This endpoint is report-only.' });
+  }
+
+  const slackWebhook = process.env.SLACK_WEBHOOK_URL?.trim();
+  const siteUrl = process.env.GSC_SITE_URL?.trim() || DEFAULT_SITE_URL;
+  const canonicalOrigin = new URL(DEFAULT_SITE_URL).origin;
+  const ga4PropertyId = process.env.GA4_PROPERTY_ID?.trim() || DEFAULT_GA4_PROPERTY_ID;
 
   try {
-    // ── Google Search Console 認証 ─────────────────────────────────
     const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
     const auth = new google.auth.GoogleAuth({
       credentials,
@@ -67,217 +219,128 @@ export default async function handler(req, res) {
     });
     const sc = google.searchconsole({ version: 'v1', auth });
 
-    // GSCは3日前までしかデータがない
-    const currEnd   = dateStr(3);
-    const currStart = dateStr(31);
-    const prevEnd   = dateStr(31);
-    const prevStart = dateStr(59);
+    const current7 = periodEnding(DATA_DELAY_DAYS, 7);
+    const previous7 = {
+      start: shiftDate(current7.start, -7),
+      end: shiftDate(current7.end, -7),
+    };
+    const current28 = periodEnding(DATA_DELAY_DAYS, 28);
+    const previous28 = {
+      start: shiftDate(current28.start, -28),
+      end: shiftDate(current28.end, -28),
+    };
 
-    const [currRows, prevRows] = await Promise.all([
-      queryGSC(sc, currStart, currEnd, ['page']),
-      queryGSC(sc, prevStart, prevEnd, ['page']),
+    const [
+      current7SummaryRows,
+      previous7SummaryRows,
+      current28SummaryRows,
+      previous28SummaryRows,
+      currentPageRows,
+      previousPageRows,
+      currentQueryRows,
+      previousQueryRows,
+      currentGAResult,
+      previousGAResult,
+    ] = await Promise.all([
+      queryGSC(sc, siteUrl, current7.start, current7.end),
+      queryGSC(sc, siteUrl, previous7.start, previous7.end),
+      queryGSC(sc, siteUrl, current28.start, current28.end),
+      queryGSC(sc, siteUrl, previous28.start, previous28.end),
+      queryGSC(sc, siteUrl, current28.start, current28.end, ['page']),
+      queryGSC(sc, siteUrl, previous28.start, previous28.end, ['page']),
+      queryGSC(sc, siteUrl, current28.start, current28.end, ['query']),
+      queryGSC(sc, siteUrl, previous28.start, previous28.end, ['query']),
+      queryOrganicGA4(
+        process.env.GA4_SERVICE_ACCOUNT_JSON
+          ? JSON.parse(process.env.GA4_SERVICE_ACCOUNT_JSON)
+          : credentials,
+        ga4PropertyId,
+        current7,
+      ).then((data) => ({ data, error: null })).catch((error) => ({ data: null, error: error.message })),
+      queryOrganicGA4(
+        process.env.GA4_SERVICE_ACCOUNT_JSON
+          ? JSON.parse(process.env.GA4_SERVICE_ACCOUNT_JSON)
+          : credentials,
+        ga4PropertyId,
+        previous7,
+      ).then((data) => ({ data, error: null })).catch((error) => ({ data: null, error: error.message })),
     ]);
 
-    const curr = Object.fromEntries(currRows.map(r => [r.keys[0], r]));
-    const prev = Object.fromEntries(prevRows.map(r => [r.keys[0], r]));
-
-    const blogPages = [...new Set([
-      ...currRows.map(r => r.keys[0]),
-      ...prevRows.map(r => r.keys[0]),
-    ])].filter(u => u.includes('/blog/') && !u.endsWith('/blog/'));
-
-    const pageStats = blogPages.map(url => {
-      const c = curr[url] || { clicks: 0, impressions: 0, ctr: 0, position: 100 };
-      const p = prev[url] || { clicks: 0, impressions: 0, ctr: 0, position: 100 };
-      return {
-        url,
-        curr:  { clicks: c.clicks, impressions: c.impressions, ctr: c.ctr, position: c.position },
-        prev:  { clicks: p.clicks, impressions: p.impressions, ctr: p.ctr, position: p.position },
-        clickChange: p.clicks > 0 ? (c.clicks - p.clicks) / p.clicks : 0,
-        posChange:   p.position < 99 ? c.position - p.position : 0,
-      };
-    }).sort((a, b) => b.curr.impressions - a.curr.impressions);
-
-    const totalClicks      = currRows.reduce((s, r) => s + r.clicks, 0);
-    const totalImpressions = currRows.reduce((s, r) => s + r.impressions, 0);
-    const avgCtr = currRows.length
-      ? (currRows.reduce((s, r) => s + r.ctr, 0) / currRows.length * 100).toFixed(1)
-      : '0.0';
-
-    // GET = レポートのみ（Vercel CronはGETしか送れないため、cronリクエストは本処理まで実行する）
-    if (req.method === 'GET' && !isCronRequest) {
-      return res.status(200).json({
-        period: { curr: [currStart, currEnd], prev: [prevStart, prevEnd] },
-        summary: { totalClicks, totalImpressions, avgCtr },
-        pageStats,
-      });
-    }
-
-    // ── POST = 最適化実行 ──────────────────────────────────────────
-    const toFix = pageStats.filter(p =>
-      (p.curr.impressions >= 30 && p.curr.ctr < 0.03) ||
-      (p.clickChange < -0.3 && p.prev.clicks >= 5)
-    ).slice(0, 5);
-
-    const GITHUB_TOKEN = process.env.GITHUB_TOKEN?.trim();
-    const GITHUB_REPO  = process.env.GITHUB_REPO?.trim();
-    const ghHeaders = {
-      'Authorization': `token ${GITHUB_TOKEN}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json',
+    const currentGA = currentGAResult.data;
+    const previousGA = previousGAResult.data;
+    const summary = {
+      current7: metricFromSummaryRows(current7SummaryRows),
+      previous7: metricFromSummaryRows(previous7SummaryRows),
+      current28: metricFromSummaryRows(current28SummaryRows),
+      previous28: metricFromSummaryRows(previous28SummaryRows),
     };
-    const repoApi = `https://api.github.com/repos/${GITHUB_REPO}`;
+    const pageStats = pageComparison(currentPageRows, previousPageRows, canonicalOrigin);
+    const queryStats = queryComparison(currentQueryRows, previousQueryRows);
 
-    const filesRes = await fetch(`${repoApi}/contents/src/content/blog`, { headers: ghHeaders });
-    const files = await filesRes.json();
+    const winners = pageStats
+      .filter((page) => page.curr.impressions >= 50 && page.clickDelta > 0)
+      .sort((a, b) => b.clickDelta - a.clickDelta)
+      .slice(0, 3);
+    const decliners = pageStats
+      .filter((page) =>
+        page.curr.impressions + page.prev.impressions >= 100
+        && (page.clickDelta < 0 || (page.positionDelta !== null && page.positionDelta >= 3))
+      )
+      .sort((a, b) => a.clickDelta - b.clickDelta)
+      .slice(0, 3);
+    const opportunities = pageStats
+      .filter((page) =>
+        page.curr.impressions >= 200
+        && page.curr.position >= 4
+        && page.curr.position <= 15
+      )
+      .slice(0, 3);
+    const queryOpportunities = queryStats
+      .filter((query) =>
+        query.curr.impressions >= 50
+        && query.curr.position >= 4
+        && query.curr.position <= 15
+      )
+      .slice(0, 5);
 
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY?.trim() });
-    const fixed = [];
-    const skipped = [];
+    const report = {
+      generatedAt: new Date().toISOString(),
+      siteUrl,
+      periods: { current7, previous7, current28, previous28 },
+      summary: {
+        ...summary,
+        totalClicks: summary.current7.clicks,
+        totalImpressions: summary.current7.impressions,
+        avgCtr: Number(summary.current7.ctr.toFixed(1)),
+      },
+      ga4: {
+        available: Boolean(currentGA && previousGA),
+        current7: currentGA,
+        previous7: previousGA,
+        error: currentGAResult.error || previousGAResult.error || null,
+      },
+      pageStats,
+      winners,
+      decliners,
+      opportunities,
+      queryOpportunities,
+      automaticChanges: 0,
+    };
 
-    for (const page of toFix) {
-      const slug = decodeURIComponent(page.url.replace(SITE_URL + 'blog/', '').replace(/\/$/, ''));
-
-      const file = files.find(f => {
-        const name = f.name.replace('.md', '');
-        return name === slug || name.includes(slug) || slug.includes(name);
-      });
-      if (!file) { skipped.push({ url: page.url, reason: 'file_not_found' }); continue; }
-
-      const fileRes  = await fetch(file.url, { headers: ghHeaders });
-      const fileData = await fileRes.json();
-      const content  = Buffer.from(fileData.content, 'base64').toString('utf-8');
-
-      const oldTitle   = (content.match(/^title:\s*"?(.+?)"?\s*$/m) || [])[1] || '';
-      const oldExcerpt = (content.match(/^excerpt:\s*"?(.+?)"?\s*$/m) || [])[1] || '';
-
-      const queryRows = await queryGSC(sc, currStart, currEnd, ['query'], page.url);
-      const topQueries = queryRows.slice(0, 10)
-        .map(r => `"${r.keys[0]}": ${r.clicks}クリック, ${r.impressions}表示, 順位${r.position.toFixed(1)}`);
-
-      const problems = [];
-      if (page.curr.ctr < 0.03 && page.curr.impressions >= 30)
-        problems.push(`CTRが${(page.curr.ctr * 100).toFixed(1)}%（基準3%を下回る）`);
-      if (page.clickChange < -0.3 && page.prev.clicks >= 5)
-        problems.push(`クリック数が前期比${(page.clickChange * 100).toFixed(0)}%減`);
-      if (page.posChange > 3)
-        problems.push(`平均順位が${page.posChange.toFixed(1)}位低下（現在${page.curr.position.toFixed(1)}位）`);
-
-      const claudeRes = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 700,
-        messages: [{
-          role: 'user',
-          content: `あなたはプロのSEOマネージャーです。以下のデータを分析し、改善案を作成してください。
-
-【記事情報】
-URL: ${page.url}
-現在のtitle: ${oldTitle}
-現在のexcerpt: ${oldExcerpt}
-
-【パフォーマンス（直近28日）】
-クリック数: ${page.curr.clicks}（前期比${page.clickChange >= 0 ? '+' : ''}${(page.clickChange * 100).toFixed(0)}%）
-表示回数: ${page.curr.impressions}
-CTR: ${(page.curr.ctr * 100).toFixed(1)}%
-平均順位: ${page.curr.position.toFixed(1)}位
-
-【問題点】
-${problems.join('\n')}
-
-【上位検索クエリ】
-${topQueries.length ? topQueries.join('\n') : 'データなし'}
-
-【ルール】
-- 記事の実際の内容に忠実に書く。誇張・煽り・釣りは絶対禁止
-- 「完全ガイド」「徹底解説」「最強」「必見」「衝撃」などの煽り表現は使わない
-- 記事に書かれていない情報や、検索クエリに含まれていても事実でない情報は含めない
-- 施設の特徴を正確かつ自然に表現する
-
-以下のJSON形式のみで返してください：
-{
-  "title": "新しいtitle（60文字以内、主要キーワードを前半に配置、煽り表現なし）",
-  "excerpt": "新しいexcerpt（120文字以内、事実のみ、自然な文体）",
-  "analysis": "なぜこの変更をするのか、どのキーワードを狙うのか、何が改善されると予測するか（3〜5文で具体的に）"
-}`,
-        }],
-      });
-
-      const responseText = claudeRes.content[0]?.text?.trim() || '{}';
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      let optimized = {};
-      try { optimized = jsonMatch ? JSON.parse(jsonMatch[0]) : {}; } catch (_) {}
-
-      if (!optimized.title || !optimized.excerpt) {
-        skipped.push({ url: page.url, reason: 'claude_parse_failed' });
-        continue;
-      }
-
-      // 不適切なキーワードが含まれている場合はスキップ
-      const blockedTerms = ['ゲイ', 'ハッテン', 'ゲイサウナ', 'アダルト', '出会い', '風俗'];
-      const hasBlockedTerm = blockedTerms.some(term =>
-        optimized.title.includes(term) || optimized.excerpt.includes(term)
-      );
-      if (hasBlockedTerm) {
-        skipped.push({ url: page.url, reason: 'blocked_content' });
-        continue;
-      }
-
-      const updatedContent = content
-        .replace(/^title:.*$/m, `title: "${optimized.title.replace(/"/g, '\\"')}"`)
-        .replace(/^excerpt:.*$/m, `excerpt: "${optimized.excerpt.replace(/"/g, '\\"')}"`);
-
-      const commitRes = await fetch(file.url, {
-        method: 'PUT',
-        headers: ghHeaders,
-        body: JSON.stringify({
-          message: `seo: ${slug}のtitle・excerptを最適化`,
-          content: Buffer.from(updatedContent).toString('base64'),
-          sha: fileData.sha,
-          branch: 'main',
-        }),
-      });
-      if (!commitRes.ok) {
-        skipped.push({ url: page.url, reason: 'commit_failed' });
-        continue;
-      }
-
-      fixed.push({
-        url: page.url,
-        slug,
-        oldTitle,
-        newTitle: optimized.title,
-        oldExcerpt,
-        newExcerpt: optimized.excerpt,
-        analysis: optimized.analysis || '',
-        problems,
-        metrics: {
-          clicks: page.curr.clicks,
-          impressions: page.curr.impressions,
-          ctr: (page.curr.ctr * 100).toFixed(1),
-          position: page.curr.position.toFixed(1),
-          clickChange: (page.clickChange * 100).toFixed(0),
-        },
-      });
+    if (!isCronRequest) {
+      return res.status(200).json(report);
     }
 
-    // ── Slack 通知 ────────────────────────────────────────────────
-    const prevClicks = prevRows.reduce((s, r) => s + r.clicks, 0);
-    const clickDelta = prevClicks > 0
-      ? ((totalClicks - prevClicks) / prevClicks * 100).toFixed(0)
-      : '–';
-    const arrow = Number(clickDelta) >= 0 ? '↑' : '↓';
-    const ranAt = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-
-    const slackBlocks = [
+    const blocks = [
       {
         type: 'header',
-        text: { type: 'plain_text', text: '📊 週次SEOレポート', emoji: true },
+        text: { type: 'plain_text', text: '📊 週次SEOレポート（変更なし）', emoji: true },
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*分析日時：* ${ranAt}\n*分析記事数：* ${pageStats.length}記事`,
+          text: `*対象期間：* ${current7.start}〜${current7.end}\n*比較期間：* ${previous7.start}〜${previous7.end}\nGoogle確定データの都合で直近3日を除外しています。`,
         },
       },
       { type: 'divider' },
@@ -286,100 +349,117 @@ ${topQueries.length ? topQueries.join('\n') : 'データなし'}
         text: {
           type: 'mrkdwn',
           text: [
-            '*📈 直近28日間のパフォーマンス*',
-            `• クリック数：*${totalClicks}回* ${arrow}${Math.abs(Number(clickDelta))}%（前期比）`,
-            `• 表示回数：*${totalImpressions}回*`,
-            `• 平均CTR：*${avgCtr}%*`,
+            '*直近7日 vs 前7日（Search Console）*',
+            `• クリック：*${formatDelta(summary.current7.clicks, summary.previous7.clicks)}*`,
+            `• 表示回数：*${formatDelta(summary.current7.impressions, summary.previous7.impressions)}*`,
+            `• CTR：*${summary.current7.ctr.toFixed(2)}%*（前期 ${summary.previous7.ctr.toFixed(2)}%）`,
+            `• 平均順位：*${summary.current7.position.toFixed(1)}位*（前期 ${summary.previous7.position.toFixed(1)}位）`,
           ].join('\n'),
         },
       },
-      { type: 'divider' },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: fixed.length > 0
-            ? `*🔧 今週の改善：${fixed.length}記事を最適化しました*`
-            : toFix.length === 0
-              ? '*✅ 問題のある記事は見つかりませんでした*'
-              : `*対象${toFix.length}記事のうち${skipped.length}記事をスキップしました*`,
+          text: [
+            '*28日トレンド（Search Console）*',
+            `• クリック：*${formatDelta(summary.current28.clicks, summary.previous28.clicks)}*`,
+            `• 表示回数：*${formatDelta(summary.current28.impressions, summary.previous28.impressions)}*`,
+            `• CTR：*${summary.current28.ctr.toFixed(2)}%*（前期 ${summary.previous28.ctr.toFixed(2)}%）`,
+            `• 平均順位：*${summary.current28.position.toFixed(1)}位*（前期 ${summary.previous28.position.toFixed(1)}位）`,
+          ].join('\n'),
         },
       },
     ];
 
-    // 修正記事ごとの詳細ブロック
-    for (const f of fixed) {
-      slackBlocks.push({ type: 'divider' });
-      slackBlocks.push({
+    if (currentGA && previousGA) {
+      blocks.push({
         type: 'section',
         text: {
           type: 'mrkdwn',
           text: [
-            `*📝 <${f.url}|${f.slug}>*`,
-            '',
-            `*⚠️ 問題点*`,
-            f.problems.map(p => `• ${p}`).join('\n'),
-            '',
-            `*📊 メトリクス*`,
-            `クリック: ${f.metrics.clicks}（${f.metrics.clickChange}%） | 表示: ${f.metrics.impressions} | CTR: ${f.metrics.ctr}% | 順位: ${f.metrics.position}位`,
-            '',
-            `*旧タイトル*`,
-            `_${f.oldTitle}_`,
-            '',
-            `*✅ 新タイトル*`,
-            `*${f.newTitle}*`,
-            '',
-            `*🧠 変更理由・戦略*`,
-            f.analysis,
+            '*直近7日 vs 前7日（GA4・自然検索）*',
+            `• セッション：*${formatDelta(currentGA.sessions, previousGA.sessions)}*`,
+            `• ユーザー：*${formatDelta(currentGA.users, previousGA.users)}*`,
+            `• エンゲージメント率：*${currentGA.engagementRate.toFixed(1)}%*（前期 ${previousGA.engagementRate.toFixed(1)}%）`,
+            `• 平均滞在：*${currentGA.averageSessionDuration.toFixed(0)}秒*（前期 ${previousGA.averageSessionDuration.toFixed(0)}秒）`,
+            `• キーイベント：*${currentGA.keyEvents}件*`,
+          ].join('\n'),
+        },
+      });
+    } else {
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '*GA4・自然検索：取得できません*\n`GA4_SERVICE_ACCOUNT_JSON`またはGA4閲覧権限を確認してください。',
+        },
+      });
+    }
+
+    const pageLines = (items) => items.map((page) =>
+      `• <${page.url}|${pageLabel(page.url)}>：${page.curr.clicks}クリック / ${page.curr.impressions}表示 / CTR ${(page.curr.ctr * 100).toFixed(1)}% / ${page.curr.position.toFixed(1)}位`
+    );
+
+    blocks.push({ type: 'divider' });
+    blocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: [
+          '*確認候補（自動変更はしません）*',
+          ...(decliners.length ? ['*下落・要確認*', ...pageLines(decliners)] : ['• 下落判定に十分なデータなし']),
+          ...(opportunities.length ? ['*4〜15位・200表示以上*', ...pageLines(opportunities)] : ['• 改善候補は母数不足のため判定保留']),
+        ].join('\n'),
+      },
+    });
+
+    if (winners.length) {
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: ['*伸びた記事*', ...pageLines(winners)].join('\n'),
+        },
+      });
+    }
+
+    if (queryOpportunities.length) {
+      blocks.push({
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: [
+            '*検索クエリ候補*',
+            ...queryOpportunities.map((query) =>
+              `• ${query.query}：${query.curr.impressions}表示 / CTR ${(query.curr.ctr * 100).toFixed(1)}% / ${query.curr.position.toFixed(1)}位`
+            ),
           ].join('\n'),
         },
       });
     }
 
-    if (skipped.length > 0) {
-      slackBlocks.push({ type: 'divider' });
-      slackBlocks.push({
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*⏭️ スキップした記事*\n${skipped.map(s => `• ${s.url}（${s.reason}）`).join('\n')}`,
-        },
-      });
-    }
-
-    slackBlocks.push({ type: 'divider' });
-    slackBlocks.push({
+    blocks.push({
       type: 'context',
-      elements: [{ type: 'mrkdwn', text: '🤖 tsuyoshishirota.com SEO自動化 powered by Claude Haiku + Google Search Console' }],
+      elements: [{
+        type: 'mrkdwn',
+        text: '自動変更：0件。候補は本文・事実・検索意図を確認し、1記事1変更で検証してください。',
+      }],
     });
 
-    const slackText = fixed.length > 0
-      ? `社長、今週のSEOレポートです。${fixed.length}記事を改善しました 🔧`
-      : '社長、今週のSEOレポートです。';
-
-    await postSlack(SLACK_WEBHOOK, slackBlocks, slackText);
-
-    return res.status(200).json({
-      success: true,
-      ranAt: new Date().toISOString(),
-      summary: { totalClicks, totalImpressions, avgCtr },
-      analyzed: pageStats.length,
-      targeted: toFix.length,
-      fixed,
-      skipped,
-    });
-
-  } catch (err) {
-    console.error('seo-weekly error:', err.message, err.stack);
-
-    await postSlack(SLACK_WEBHOOK, [{
-      type: 'section',
-      text: { type: 'mrkdwn', text: `*❌ SEO自動化でエラーが発生しました*\n\`${err.message}\`` },
-    }], '社長、エラーが発生しました。確認をお願いします。');
-
+    await postSlack(slackWebhook, blocks, '今週のSEOレポートです。サイトへの自動変更はありません。');
+    return res.status(200).json(report);
+  } catch (error) {
+    console.error('seo-weekly error:', error.message, error.stack);
+    if (isCronRequest) {
+      await postSlack(slackWebhook, [{
+        type: 'section',
+        text: { type: 'mrkdwn', text: `*❌ SEOレポート取得エラー*\n\`${error.message}\`` },
+      }], 'SEOレポートの取得に失敗しました。');
+    }
     return res.status(500).json({
-      error: err.message,
-      details: err.response?.data || err.cause?.message || null,
+      error: error.message,
+      details: error.response?.data || error.cause?.message || null,
     });
   }
 }

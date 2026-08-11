@@ -113,3 +113,21 @@ excerpt: "記事の要約（一覧ページに表示されます）"
 ### フォントの変更
 
 `tailwind.config.mjs` の `fontFamily.sans` と `src/layouts/BaseLayout.astro` の Google Fonts の読み込みURLを変更してください。
+
+## 週次SEOレポート
+
+Vercel Cronが毎週月曜日9:00（日本時間）に /api/seo-weekly を呼び出し、
+直近7日と前7日、直近28日と前28日のSearch Console実績をSlackへ通知します。
+この処理はレポート専用で、記事やタイトルを自動変更しません。
+
+必要な環境変数:
+
+- GOOGLE_SERVICE_ACCOUNT_JSON: Search Console閲覧権限を持つサービスアカウント
+- GA4_SERVICE_ACCOUNT_JSON: GA4閲覧権限を持つサービスアカウント（GSCと同一なら省略可）
+- GA4_PROPERTY_ID: GA4プロパティID（未指定時は現在のプロパティを使用）
+- GSC_SITE_URL: Search Consoleプロパティ（未指定時は https://tsuyoshishirota.com/）
+- CRON_SECRET: Vercel Cron認証用シークレット
+- SLACK_WEBHOOK_URL: 通知先Slack Incoming Webhook
+
+改善候補は提案として表示されるだけです。タイトルや本文を変更する場合は、
+事実確認後に1記事1変更とし、再クロール後28日以上は追加変更せず効果を確認してください。
