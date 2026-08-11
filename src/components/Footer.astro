@@ -1,13 +1,21 @@
 ---
 interface Props {
   role?: string;
+  showEmployeeCta?: boolean;
 }
 
-const { role = '小さなお店のAI自動化' } = Astro.props;
+const { role = '小さなお店のAI自動化', showEmployeeCta = true } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
+  {showEmployeeCta && (
+    <a class="employee-footer-link" href="/personal">
+      <span>会社員の方へ</span>
+      <strong>自分の仕事をAIで効率化したい方はこちら</strong>
+      <i aria-hidden="true">→</i>
+    </a>
+  )}
   <div class="footer-inner">
     <div>
       <p class="name">城田 剛</p>
@@ -15,7 +23,6 @@ const year = new Date().getFullYear();
     </div>
     <div class="footer-links">
       <a href="/">お店のAI自動化</a>
-      <a href="/personal">会社員のAI相談</a>
       <a href="/blog">サウナブログ</a>
       <a href="https://note.com/pon_localization" target="_blank" rel="noreferrer">note</a>
       <a href="https://www.neppashi.com" target="_blank" rel="noreferrer">熱波師.COM</a>
@@ -26,6 +33,11 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer { border-top: 1px solid #cfc8ba; background: #f4f0e6; color: #252927; }
+  .employee-footer-link { display: flex; min-height: 82px; align-items: center; justify-content: center; gap: 18px; border-bottom: 1px solid #cfc8ba; background: #fffdf8; color: #19384c; text-decoration: none; }
+  .employee-footer-link span { color: #c94f32; font-size: 12px; font-weight: 700; }
+  .employee-footer-link strong { font-size: 14px; }
+  .employee-footer-link i { color: #c94f32; font-size: 14px; font-style: normal; transition: transform .2s ease; }
+  .employee-footer-link:hover i { transform: translateX(4px); }
   .footer-inner { display: grid; grid-template-columns: 1fr auto; width: min(1120px, calc(100% - 64px)); margin: 0 auto; padding: 52px 0; gap: 30px 60px; }
   .name { margin: 0 0 7px; font-size: 17px; font-weight: 700; }
   .role { margin: 0; color: #737873; font-size: 12px; }
@@ -34,6 +46,10 @@ const year = new Date().getFullYear();
   .footer-links a:hover { color: #c94f32; }
   .copyright { grid-column: 1 / -1; margin: 10px 0 0; color: #737873; font-size: 11px; }
   @media (max-width: 720px) {
+    .employee-footer-link { display: grid; grid-template-columns: 1fr auto; min-height: 86px; gap: 4px 10px; padding: 15px 20px; justify-content: stretch; }
+    .employee-footer-link span { grid-column: 1 / -1; }
+    .employee-footer-link strong { grid-column: 1; font-size: 13px; line-height: 1.6; }
+    .employee-footer-link i { grid-column: 2; grid-row: 2; align-self: center; }
     .footer-inner { grid-template-columns: 1fr; width: calc(100% - 40px); padding: 42px 0; }
     .footer-links { flex-wrap: wrap; gap: 18px 24px; }
     .copyright { grid-column: 1; }
