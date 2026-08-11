@@ -136,20 +136,6 @@ const faqs = [
     </div>
   </section>
 
-  <section class="section example" aria-labelledby="example-title">
-    <div class="shell example-grid">
-      <div>
-        <p class="label">仕事の一例</p>
-        <h2 id="example-title">たとえば、4店舗の月次集計なら。</h2>
-      </div>
-      <div class="example-flow">
-        <p class="example-intro">4店舗から届くファイルを決まった場所に入れると、一覧と変化のまとめまでをつくる。店長は最後に数字を確かめます。</p>
-        <div class="flow-row automated"><p>各店舗のファイル <span>→</span> 必要な数字を整理 <span>→</span> 店舗別・全体を比較 <span>→</span> 月次レポート <span>→</span> 店長が確認</p></div>
-        <small>※実際にできる範囲は、使っているファイルやサービスを見て判断します。</small>
-      </div>
-    </div>
-  </section>
-
   <section class="section process" aria-labelledby="process-title">
     <div class="shell">
       <div class="compact-heading">
@@ -274,17 +260,6 @@ const faqs = [
   .action-item h3 { margin: 13px 0 10px; color: #19384c; font-size: 23px; }
   .action-item p { margin: 0; color: #575d58; font-size: 13px; line-height: 1.75; }
 
-  .example { background: #f4f0e6; }
-  .example-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 90px; }
-  .example-flow { align-self: center; border-top: 1px solid #cfc8ba; }
-  .example-intro { margin: 0; padding: 25px 0; border-bottom: 1px solid #cfc8ba; color: #4f5551; font-size: 14px; }
-  .flow-row { display: grid; grid-template-columns: 125px 1fr; gap: 26px; padding: 25px 0; border-bottom: 1px solid #cfc8ba; }
-  .flow-row strong { color: #19384c; font-size: 13px; }
-  .flow-row p { margin: 0; font-size: 14px; line-height: 1.85; }
-  .flow-row span { padding: 0 3px; color: #9a9c98; }
-  .flow-row.automated { display: block; border-left: 3px solid #c94f32; padding-left: 20px; background: #fffdf8; }
-  .example-flow small { display: block; margin-top: 14px; color: #737873; font-size: 11px; line-height: 1.7; }
-
   .process { background: #fffdf8; }
   .process-list { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 62px; border-top: 1px solid #cfc8ba; border-bottom: 1px solid #cfc8ba; }
   .process-list article { min-height: 205px; padding: 28px 34px; border-right: 1px solid #cfc8ba; }
@@ -332,7 +307,7 @@ const faqs = [
   @media (max-width: 900px) {
     .shell { width: min(720px, calc(100% - 40px)); }
     .section { padding: 80px 0; }
-    .hero-grid, .section-heading, .example-grid, .case-grid, .about-grid, .faq-grid { grid-template-columns: 1fr; gap: 44px; }
+    .hero-grid, .section-heading, .case-grid, .about-grid, .faq-grid { grid-template-columns: 1fr; gap: 44px; }
     .section-heading > div, .compact-heading { grid-template-columns: 1fr; gap: 24px; }
     .action-list { grid-template-columns: repeat(2, 1fr); }
     .action-item:nth-child(2) { border-right: 0; }
@@ -369,8 +344,6 @@ const faqs = [
     .action-item, .action-item:first-child, .action-item:last-child { padding: 22px 0; border-right: 0; border-bottom: 1px solid #cfc8ba; }
     .action-item:last-child { border-bottom: 0; }
     .action-item h3 { display: inline-block; min-width: 92px; margin: 0 0 8px 18px; }
-    .flow-row { grid-template-columns: 1fr; gap: 10px; }
-    .flow-row p { line-height: 2; }
     .process-list { grid-template-columns: 1fr; margin-top: 42px; }
     .process-list article, .process-list article:first-child, .process-list article:last-child { min-height: 0; padding: 23px 0; border-right: 0; border-bottom: 1px solid #cfc8ba; }
     .process-list article:last-child { border-bottom: 0; }
