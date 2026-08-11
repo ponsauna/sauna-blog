@@ -3,14 +3,14 @@
   "trailingSlash": false,
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [
         {
           "type": "host",
           "value": "www.tsuyoshishirota.com"
         }
       ],
-      "destination": "https://tsuyoshishirota.com/:path*",
+      "destination": "https://tsuyoshishirota.com/$1",
       "permanent": true
     },
     {
