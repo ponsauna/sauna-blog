@@ -36,15 +36,8 @@ const manualTasks = [
   '数字の変化を知るために、いくつもの画面を確認する',
 ];
 
-const aiActions = [
-  { title: '読む', body: '届いたファイルや入力内容を確認する' },
-  { title: '分ける', body: '必要な項目だけを整理する' },
-  { title: '比べる', body: '店舗・前月・目標との差を見る' },
-  { title: 'まとめる', body: 'レポートや通知の形にする' },
-];
-
 const processSteps = [
-  { number: '01', title: '仕事を見せてもらう', body: '普段の作業を、そのまま見せてください。' },
+  { number: '01', title: '無料で相談する', body: '困っている作業や、毎月繰り返している仕事を伺います。' },
   { number: '02', title: '試しにつくる', body: '時間のかかる仕事を一つ選び、小さく動かします。' },
   { number: '03', title: '使って直す', body: '実際の仕事で試し、現場に合うよう調整します。' },
 ];
@@ -95,8 +88,8 @@ const faqs = [
           店舗ごとの売上をまとめる。予約情報を別の表へ写す。月次報告をつくる。<br class="desktop-only" />
           毎回同じように繰り返す仕事を、いま使っている道具とAIで自動化します。
         </p>
-        <a class="button primary-button" href="#contact">困っている仕事を相談する</a>
-        <p class="button-note">カフェ・ジム・サロンなど、小さなお店のご相談を受け付けています。</p>
+        <a class="button primary-button" href="#contact">まずは無料で相談する</a>
+        <p class="button-note">相談は無料です。カフェ・ジム・サロンなど、小さなお店のお話を伺います。</p>
       </div>
       <figure class="hero-portrait">
         <img src="/images/tsuyoshi-shirota.jpg" alt="緑の木々を背景に立つ城田剛" width="1200" height="1800" />
@@ -117,25 +110,6 @@ const faqs = [
       {manualTasks.map((task, index) => (
         <div class="ruled-row"><span>{String(index + 1).padStart(2, '0')}</span><p>{task}</p></div>
       ))}
-    </div>
-  </section>
-
-  <section class="section actions" aria-labelledby="actions-title">
-    <div class="shell">
-      <div class="compact-heading">
-        <p class="label">AIに任せる範囲</p>
-        <h2 id="actions-title">AIに任せるのは、判断の手前まで。</h2>
-        <p>最後に確かめること、お客様と向き合うことは、人の手に残します。</p>
-      </div>
-      <div class="action-list">
-        {aiActions.map((action, index) => (
-          <article class="action-item">
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            <h3>{action.title}</h3>
-            <p>{action.body}</p>
-          </article>
-        ))}
-      </div>
     </div>
   </section>
 
@@ -214,13 +188,13 @@ const faqs = [
 
   <section id="contact" class="section contact" aria-labelledby="contact-title">
     <div class="shell contact-inner">
-      <p class="label">お問い合わせ</p>
+      <p class="label">無料相談</p>
       <h2 id="contact-title">
-        <span class="desktop-title">まずは、毎月繰り返している作業を教えてください。</span>
-        <span class="mobile-title">まずは、毎月<br />繰り返している<br />作業を<br class="narrow-break" />教えてください。</span>
+        <span class="desktop-title">まずは、無料相談から。</span>
+        <span class="mobile-title">まずは、<br />無料相談から。</span>
       </h2>
-      <p>まだ自動化したい内容が決まっていなくても大丈夫です。機密情報の入力は必要ありません。</p>
-      <a class="button primary-button" href="https://docs.google.com/forms/d/e/1FAIpQLSewdmS_pSjJh0LF-KO2BsjW0myrnp2NB22J7Ia7mBuuTGvjnw/viewform?usp=publish-editor" target="_blank" rel="noreferrer">困っている作業を相談する ↗</a>
+      <p>何を自動化できるか決まっていなくても大丈夫です。「毎回これが面倒」という作業を教えてください。機密情報の入力は必要ありません。</p>
+      <a class="button primary-button" href="https://docs.google.com/forms/d/e/1FAIpQLSewdmS_pSjJh0LF-KO2BsjW0myrnp2NB22J7Ia7mBuuTGvjnw/viewform?usp=publish-editor" target="_blank" rel="noreferrer">無料相談を申し込む ↗</a>
     </div>
   </section>
 
@@ -254,7 +228,6 @@ const faqs = [
   .hero-portrait img { display: block; width: 100%; aspect-ratio: 4 / 5; border: 1px solid #19384c; object-fit: cover; object-position: 50% 34%; }
   .hero-portrait figcaption { margin-top: 10px; color: #737873; font-size: 11px; line-height: 1.6; }
   .mobile-title { display: none; }
-  .narrow-break { display: none; }
 
   .section-heading { display: grid; grid-template-columns: 220px 1fr; gap: 72px; }
   .section-heading > div { display: grid; grid-template-columns: 1fr .75fr; gap: 64px; align-items: end; }
@@ -265,17 +238,9 @@ const faqs = [
   .ruled-row span { padding-top: 4px; color: #c94f32; font-size: 12px; font-weight: 700; }
   .ruled-row p { margin: 0; font-size: 19px; }
 
-  .actions { background: #fffdf8; }
   .compact-heading { display: grid; grid-template-columns: 210px 1fr .9fr; gap: 56px; align-items: end; }
   .compact-heading .label { align-self: start; }
   .compact-heading > p:last-child { margin-bottom: 5px; color: #575d58; }
-  .action-list { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 64px; border-top: 1px solid #cfc8ba; border-bottom: 1px solid #cfc8ba; }
-  .action-item { padding: 28px 24px 30px; border-right: 1px solid #cfc8ba; }
-  .action-item:first-child { padding-left: 0; }
-  .action-item:last-child { border-right: 0; padding-right: 0; }
-  .action-item > span { color: #c94f32; font-size: 11px; font-weight: 700; }
-  .action-item h3 { margin: 13px 0 10px; color: #19384c; font-size: 23px; }
-  .action-item p { margin: 0; color: #575d58; font-size: 13px; line-height: 1.75; }
 
   .process { background: #fffdf8; }
   .process-list { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 62px; border-top: 1px solid #cfc8ba; border-bottom: 1px solid #cfc8ba; }
@@ -326,9 +291,6 @@ const faqs = [
     .section { padding: 80px 0; }
     .hero-grid, .section-heading, .case-grid, .about-grid, .faq-grid { grid-template-columns: 1fr; gap: 44px; }
     .section-heading > div, .compact-heading { grid-template-columns: 1fr; gap: 24px; }
-    .action-list { grid-template-columns: repeat(2, 1fr); }
-    .action-item:nth-child(2) { border-right: 0; }
-    .action-item:nth-child(-n+2) { border-bottom: 1px solid #cfc8ba; }
     .process-list article { padding: 28px 24px; }
     .contact-inner { max-width: 720px; margin: 0 auto; }
   }
@@ -359,10 +321,6 @@ const faqs = [
     .ruled-row p { font-size: 16px; }
     .compact-heading { gap: 16px; }
     .compact-heading > p:last-child { margin-top: 6px; }
-    .action-list { grid-template-columns: 1fr; margin-top: 42px; }
-    .action-item, .action-item:first-child, .action-item:last-child { padding: 22px 0; border-right: 0; border-bottom: 1px solid #cfc8ba; }
-    .action-item:last-child { border-bottom: 0; }
-    .action-item h3 { display: inline-block; min-width: 92px; margin: 0 0 8px 18px; }
     .process-list { grid-template-columns: 1fr; margin-top: 42px; }
     .process-list article, .process-list article:first-child, .process-list article:last-child { min-height: 0; padding: 23px 0; border-right: 0; border-bottom: 1px solid #cfc8ba; }
     .process-list article:last-child { border-bottom: 0; }
@@ -382,9 +340,5 @@ const faqs = [
 
   @media (prefers-reduced-motion: reduce) {
     :global(html) { scroll-behavior: auto; }
-  }
-
-  @media (max-width: 340px) {
-    .narrow-break { display: inline; }
   }
 </style>
