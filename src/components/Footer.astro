@@ -1,4 +1,9 @@
 ---
+interface Props {
+  role?: string;
+}
+
+const { role = '小さなお店のAI自動化' } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
@@ -6,9 +11,10 @@ const year = new Date().getFullYear();
   <div class="footer-inner">
     <div>
       <p class="name">城田 剛</p>
-      <p class="role">小さなお店のAI自動化</p>
+      <p class="role">{role}</p>
     </div>
     <div class="footer-links">
+      <a href="/personal">会社員のAI相談</a>
       <a href="/blog">サウナブログ</a>
       <a href="https://note.com/pon_localization" target="_blank" rel="noreferrer">note</a>
       <a href="https://www.neppashi.com" target="_blank" rel="noreferrer">熱波師.COM</a>

@@ -1,4 +1,9 @@
 ---
+interface Props {
+  variant?: 'business' | 'personal';
+}
+
+const { variant = 'business' } = Astro.props;
 const currentPath = Astro.url.pathname;
 const onHome = currentPath === '/';
 ---
@@ -6,12 +11,24 @@ const onHome = currentPath === '/';
 <header class="site-header">
   <div class="header-inner">
     <nav aria-label="メインナビゲーション">
-      <a href={onHome ? '#service' : '/#service'}>できること</a>
-      <a href={onHome ? '#case' : '/#case'}>つくったもの</a>
-      <a href={onHome ? '#about' : '/#about'}>私について</a>
-      <a href="https://note.com/pon_localization" target="_blank" rel="noreferrer">note</a>
-      <a href="/blog">サウナブログ</a>
-      <a class="contact-link" href={onHome ? '#contact' : '/#contact'}>無料相談</a>
+      {variant === 'personal' ? (
+        <>
+          <a href="#service">相談できること</a>
+          <a href="#about">私について</a>
+          <a href="#note">note</a>
+          <a href="/">お店の方へ</a>
+          <a class="contact-link" href="#contact">無料相談</a>
+        </>
+      ) : (
+        <>
+          <a href={onHome ? '#service' : '/#service'}>できること</a>
+          <a href={onHome ? '#case' : '/#case'}>つくったもの</a>
+          <a href={onHome ? '#about' : '/#about'}>私について</a>
+          <a href="https://note.com/pon_localization" target="_blank" rel="noreferrer">note</a>
+          <a href="/blog">サウナブログ</a>
+          <a class="contact-link" href={onHome ? '#contact' : '/#contact'}>無料相談</a>
+        </>
+      )}
     </nav>
   </div>
 </header>
