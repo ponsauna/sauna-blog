@@ -101,6 +101,12 @@ const faqs = [
 >
   <Header slot="header" />
 
+  <a class="employee-strip" href="/personal">
+    <span>会社員の方へ</span>
+    <strong>自分の仕事をAIで効率化したい方はこちら</strong>
+    <i aria-hidden="true">→</i>
+  </a>
+
   <section class="hero" aria-labelledby="hero-title">
     <div class="shell hero-grid">
       <div class="hero-copy">
@@ -284,7 +290,13 @@ const faqs = [
   .primary-button:hover { background: #a93c25; }
   .text-link { display: inline-flex; color: #19384c; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
 
-  .hero { display: flex; min-height: 750px; align-items: center; padding: 118px 0 74px; background: #fffdf8; }
+  .employee-strip { display: flex; min-height: 52px; margin-top: 72px; align-items: center; justify-content: center; gap: 18px; border-bottom: 1px solid #cfc8ba; background: #f4f0e6; color: #19384c; text-decoration: none; }
+  .employee-strip span { color: #c94f32; font-size: 12px; font-weight: 700; }
+  .employee-strip strong { font-size: 13px; }
+  .employee-strip i { color: #c94f32; font-size: 14px; font-style: normal; transition: transform .2s ease; }
+  .employee-strip:hover i { transform: translateX(4px); }
+
+  .hero { display: flex; min-height: 720px; align-items: center; padding: 74px 0; background: #fffdf8; }
   .hero-grid { display: grid; grid-template-columns: 58fr 42fr; gap: 64px; align-items: center; }
   .hero-lead { max-width: 590px; margin-bottom: 36px; color: #4f5551; font-size: 17px; }
   .button-note { margin: 13px 0 0; color: #737873; font-size: 11px; }
@@ -389,7 +401,11 @@ const faqs = [
     .desktop-only { display: none; }
     .desktop-title { display: none; }
     .mobile-title { display: inline; }
-    .hero { min-height: auto; padding: 62px 0 70px; }
+    .employee-strip { display: grid; grid-template-columns: 1fr auto; min-height: 68px; margin-top: 62px; gap: 3px 10px; padding: 11px 20px; justify-content: stretch; }
+    .employee-strip span { grid-column: 1 / -1; }
+    .employee-strip strong { grid-column: 1; font-size: 12px; line-height: 1.6; }
+    .employee-strip i { grid-column: 2; grid-row: 2; align-self: center; }
+    .hero { min-height: auto; padding: 38px 0 70px; }
     .hero-grid { display: grid; gap: 24px; }
     .hero-copy { display: contents; }
     .hero-copy .label { order: 1; margin-bottom: -10px; }
