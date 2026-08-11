@@ -128,6 +128,32 @@ Vercel Cronが毎週月曜日9:00（日本時間）に /api/seo-weekly を呼び
 - GSC_SITE_URL: Search Consoleプロパティ（未指定時は https://tsuyoshishirota.com/）
 - CRON_SECRET: Vercel Cron認証用シークレット
 - SLACK_WEBHOOK_URL: 通知先Slack Incoming Webhook
+- SLACK_BOT_TOKEN: SEO承認ボットのBot User OAuth Token（xoxb-...）
+- SLACK_SIGNING_SECRET: Slack Events APIの署名検証用Signing Secret
+- SLACK_CHANNEL_ID: SEOレポートを送るチャンネルID（C...）
+- SLACK_APPROVER_USER_IDS: 承認を許可するSlackユーザーID。複数の場合はカンマ区切り
+- GITHUB_TOKEN: ブランチ・PR作成・マージ権限を持つGitHubトークン
+- GITHUB_REPO: `owner/repository`形式（例: `ponsauna/sauna-blog`）
+- ANTHROPIC_API_KEY: 承認前のタイトル案を1件作るためのAPIキー
+- SEO_PROPOSAL_MODEL: 提案生成モデル。未指定時はコード内の安全な既定値を使用
 
-改善候補は提案として表示されるだけです。タイトルや本文を変更する場合は、
-事実確認後に1記事1変更とし、再クロール後28日以上は追加変更せず効果を確認してください。
+### Slackスタンプ承認
+
+`slack-app-manifest.yml`からSlack Appを作成し、上記のSlack環境変数を設定すると、
+週次レポートとは別に、最大1件の具体的なタイトル変更案が届きます。
+
+- ✅ (`white_check_mark`): GitHubのビルドと変更範囲を確認し、PRをmainへマージ
+- ❌ (`x`): PRを閉じて見送り。本番サイトは変更しない
+
+承認できるのは`SLACK_APPROVER_USER_IDS`に登録したユーザーだけです。提案は最初に専用PRへ保存され、
+本文・excerpt・画像などタイトル以外の変更が混ざっている場合は自動的に拒否されます。
+同じ記事を変更した後は28日間を観測期間とし、その間は新しい提案対象にしません。
+
+Slack AppのEvent Subscriptions Request URLは以下です。
+
+```text
+https://tsuyoshishirota.com/api/slack-events
+```
+
+Bot Token Scopesは`chat:write`、`channels:history`、`groups:history`、`reactions:read`、
+Bot Eventは`reaction_added`を使用します。BotをSEOレポート送信先チャンネルへ招待してください。

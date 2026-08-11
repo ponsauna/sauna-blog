@@ -54,6 +54,9 @@
     },
     "api/seo-weekly.js": {
       "maxDuration": 120
+    },
+    "api/slack-events.js": {
+      "maxDuration": 120
     }
   }
 }

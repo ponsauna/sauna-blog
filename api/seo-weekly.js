@@ -1,5 +1,10 @@
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
 import { google } from 'googleapis';
+import {
+  createSeoProposal,
+  postSlackBotMessage,
+  slackAutomationConfigured,
+} from '../lib/seo-automation.js';
 
 const DEFAULT_SITE_URL = 'https://tsuyoshishirota.com/';
 const DEFAULT_GA4_PROPERTY_ID = '529364809';
@@ -120,6 +125,26 @@ function queryComparison(currentRows, previousRows) {
     .sort((a, b) => b.curr.impressions - a.curr.impressions);
 }
 
+function queriesByPage(rows, canonicalOrigin) {
+  const pages = new Map();
+  for (const row of rows) {
+    const page = normalizePageUrl(row.keys?.[0] || '', canonicalOrigin);
+    const query = row.keys?.[1]?.trim();
+    if (!page || !query) continue;
+    const entries = pages.get(page) || [];
+    entries.push({
+      query,
+      impressions: row.impressions || 0,
+      clicks: row.clicks || 0,
+    });
+    pages.set(page, entries);
+  }
+  for (const entries of pages.values()) {
+    entries.sort((a, b) => b.impressions - a.impressions || b.clicks - a.clicks);
+  }
+  return pages;
+}
+
 async function queryOrganicGA4(credentials, propertyId, period) {
   if (!propertyId) return null;
   const client = new BetaAnalyticsDataClient({ credentials });
@@ -175,6 +200,14 @@ function pageLabel(url) {
 }
 
 async function postSlack(webhookUrl, blocks, text) {
+  if (process.env.SLACK_BOT_TOKEN?.trim() && process.env.SLACK_CHANNEL_ID?.trim()) {
+    try {
+      await postSlackBotMessage({ blocks, text });
+      return;
+    } catch (error) {
+      console.error('Slack Bot通知エラー:', error.message);
+    }
+  }
   if (!webhookUrl) return;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -239,6 +272,7 @@ export default async function handler(req, res) {
       previousPageRows,
       currentQueryRows,
       previousQueryRows,
+      currentPageQueryRows,
       currentGAResult,
       previousGAResult,
     ] = await Promise.all([
@@ -250,6 +284,7 @@ export default async function handler(req, res) {
       queryGSC(sc, siteUrl, previous28.start, previous28.end, ['page']),
       queryGSC(sc, siteUrl, current28.start, current28.end, ['query']),
       queryGSC(sc, siteUrl, previous28.start, previous28.end, ['query']),
+      queryGSC(sc, siteUrl, current28.start, current28.end, ['page', 'query']),
       queryOrganicGA4(
         process.env.GA4_SERVICE_ACCOUNT_JSON
           ? JSON.parse(process.env.GA4_SERVICE_ACCOUNT_JSON)
@@ -276,6 +311,7 @@ export default async function handler(req, res) {
     };
     const pageStats = pageComparison(currentPageRows, previousPageRows, canonicalOrigin);
     const queryStats = queryComparison(currentQueryRows, previousQueryRows);
+    const pageQueries = queriesByPage(currentPageQueryRows, canonicalOrigin);
 
     const winners = pageStats
       .filter((page) => page.curr.impressions >= 50 && page.clickDelta > 0)
@@ -334,7 +370,7 @@ export default async function handler(req, res) {
     const blocks = [
       {
         type: 'header',
-        text: { type: 'plain_text', text: '📊 週次SEOレポート（変更なし）', emoji: true },
+        text: { type: 'plain_text', text: '📊 週次SEOレポート', emoji: true },
       },
       {
         type: 'section',
@@ -443,11 +479,44 @@ export default async function handler(req, res) {
       type: 'context',
       elements: [{
         type: 'mrkdwn',
-        text: '自動変更：0件。候補は本文・事実・検索意図を確認し、1記事1変更で検証してください。',
+        text: slackAutomationConfigured()
+          ? '自動変更：0件。承認可能な提案がある場合は別メッセージで送ります。✅が付くまで本番は変更しません。'
+          : '自動変更：0件。Slack App接続後は、別メッセージの✅で1記事1変更を承認できます。',
       }],
     });
 
-    await postSlack(slackWebhook, blocks, '今週のSEOレポートです。サイトへの自動変更はありません。');
+    await postSlack(slackWebhook, blocks, '今週のSEOレポートです。未承認の変更は行いません。');
+
+    report.proposal = { status: 'not_configured' };
+    if (slackAutomationConfigured()) {
+      const candidates = [...opportunities, ...decliners]
+        .filter((candidate, index, items) => items.findIndex((item) => item.url === candidate.url) === index);
+      for (const candidate of candidates) {
+        try {
+          const queries = (pageQueries.get(candidate.url) || []).slice(0, 5).map((item) => item.query);
+          const result = await createSeoProposal({
+            candidate,
+            queries,
+            canonicalOrigin,
+            period: current28,
+          });
+          report.proposal = result;
+          if (result.status === 'created') break;
+        } catch (proposalError) {
+          console.error('seo proposal error:', proposalError.message, proposalError.stack);
+          report.proposal = { status: 'error', error: proposalError.message };
+          await postSlack(slackWebhook, [{
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `⚠️ *SEO提案は作成されませんでした*\n${proposalError.message}\nサイトへの変更はありません。`,
+            },
+          }], 'SEO提案の作成に失敗しました。サイトへの変更はありません。');
+          break;
+        }
+      }
+      if (candidates.length === 0) report.proposal = { status: 'no_candidate' };
+    }
     return res.status(200).json(report);
   } catch (error) {
     console.error('seo-weekly error:', error.message, error.stack);
