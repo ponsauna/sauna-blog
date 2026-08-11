@@ -16,7 +16,7 @@ const onHome = currentPath === '/';
           <a href="#service">相談できること</a>
           <a href="#about">私について</a>
           <a href="#note">note</a>
-          <a href="/">お店の方へ</a>
+          <a class="audience-link" href="/"><span class="wide-label">お店・個人事業主の方へ</span><span class="narrow-label">お店の方へ</span></a>
           <a class="contact-link" href="#contact">無料相談</a>
         </>
       ) : (
@@ -25,7 +25,7 @@ const onHome = currentPath === '/';
           <a href={onHome ? '#case' : '/#case'}>つくったもの</a>
           <a href={onHome ? '#about' : '/#about'}>私について</a>
           <a href="https://note.com/pon_localization" target="_blank" rel="noreferrer">note</a>
-          <a href="/blog">サウナブログ</a>
+          <a class="audience-link" href="/personal"><span class="wide-label">会社員向けAI相談</span><span class="narrow-label">会社員向け</span></a>
           <a class="contact-link" href={onHome ? '#contact' : '/#contact'}>無料相談</a>
         </>
       )}
@@ -39,11 +39,15 @@ const onHome = currentPath === '/';
   nav { display: flex; align-items: center; gap: 30px; }
   nav a { color: #19384c; font-size: 12px; font-weight: 700; text-decoration: none; }
   nav a:hover { color: #c94f32; }
+  .narrow-label { display: none; }
   .contact-link { min-height: 42px; display: inline-flex; align-items: center; border: 1px solid #c94f32; border-radius: 2px; padding: 0 18px; color: #c94f32; }
   @media (max-width: 720px) {
     .header-inner { width: calc(100% - 40px); height: 62px; }
-    nav a:not(.contact-link) { display: none; }
-    nav { gap: 0; }
+    nav a:not(.contact-link):not(.audience-link) { display: none; }
+    nav { gap: 14px; }
+    .wide-label { display: none; }
+    .narrow-label { display: inline; }
+    .audience-link { font-size: 11px; }
     .contact-link { min-height: 40px; padding: 0 16px; }
   }
 </style>

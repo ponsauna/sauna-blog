@@ -31,15 +31,40 @@ const serviceLd = {
 };
 
 const manualTasks = [
-  '複数店舗の売上を、毎月ひとつの表へまとめる',
-  '予約や顧客情報を、別のシステムへ入力し直す',
-  '数字の変化を知るために、いくつもの画面を確認する',
+  { problem: '複数店舗の売上を、毎月ひとつの表へまとめる', support: '集計手順を整理し、一つの表やレポートにする' },
+  { problem: '予約や顧客情報を、別のシステムへ入力し直す', support: '必要な項目だけを、決まった場所へ記録する' },
+  { problem: '数字の変化を知るために、いくつもの画面を確認する', support: '確認が必要な変化だけを、分かる形にする' },
 ];
 
 const processSteps = [
-  { number: '01', title: '無料で相談する', body: '困っている作業や、毎月繰り返している仕事を伺います。' },
-  { number: '02', title: '試しにつくる', body: '時間のかかる仕事を一つ選び、小さく動かします。' },
-  { number: '03', title: '使って直す', body: '実際の仕事で試し、現場に合うよう調整します。' },
+  { number: '01', title: '仕事を伺う', body: '困っている作業や、毎月繰り返している仕事を伺います。' },
+  { number: '02', title: '方法と費用を提案する', body: 'できること、進め方、費用をご説明します。' },
+  { number: '03', title: '一つから試す', body: '内容に納得いただいた後、時間のかかる仕事を一つ選びます。' },
+  { number: '04', title: '使って直す', body: '実際の仕事で試し、現場に合うよう調整します。' },
+];
+
+const practice = [
+  { title: '日々の業務', body: 'AIを使った情報整理、資料作成、定例作業の効率化' },
+  { title: '自動化', body: '自分の仕事に合わせた仕組みをつくり、実際に運用' },
+  { title: '社内共有', body: 'AI勉強会を企画し、使い方や事例を共有' },
+];
+
+const noteArticles = [
+  {
+    title: 'ランサーズ・クラウドワークスの「自動化できる案件」だけをAIが自動で通知してくれるツールを作った',
+    href: 'https://note.com/pon_localization/n/n9be37931fd90',
+    tag: 'AIによる情報整理・通知',
+  },
+  {
+    title: 'iOSショートカット × Claude Codeで、ブログを「1タップ半自動化」した仕組みの全体像',
+    href: 'https://note.com/pon_localization/n/ne3b33f003b90',
+    tag: '日々の自動化',
+  },
+  {
+    title: '「会社の看板」を外した私は無力だった。150人の熱波師を集めるまでの泥臭い全記録',
+    href: 'https://note.com/pon_localization/n/n61338ab818b7',
+    tag: '個人プロジェクトの記録',
+  },
 ];
 
 const career = [
@@ -76,32 +101,7 @@ const faqs = [
 >
   <Header slot="header" />
 
-  <section class="audience-gateway" aria-labelledby="gateway-title">
-    <div class="shell gateway-inner">
-      <p class="label">AIで、仕事を少し軽くする。</p>
-      <h1 id="gateway-title">
-        <span class="desktop-title">相談したいのは、どちらですか。</span>
-        <span class="mobile-title">相談したいのは、<br />どちらですか。</span>
-      </h1>
-      <p class="gateway-lead">お店の運営も、会社での仕事も。いま繰り返している作業を伺い、AIをどう使えるか一緒に考えます。</p>
-      <div class="audience-options" aria-label="相談内容を選ぶ">
-        <a class="audience-option business-option" href="#store">
-          <span class="option-label">お店・個人事業主の方</span>
-          <strong>閉店後まで続く仕事を、<br />減らしたい。</strong>
-          <p>売上集計、予約情報の転記、月次報告などを自動化したい方へ。</p>
-          <span class="option-link">お店のAI自動化を見る ↓</span>
-        </a>
-        <a class="audience-option personal-option" href="/personal">
-          <span class="option-label">会社員の方</span>
-          <strong>自分の仕事に合う、<br />AIの使い方を知りたい。</strong>
-          <p>仕事でAIを使いたいけれど、事例や具体的な方法が分からない方へ。</p>
-          <span class="option-link">会社員向けAI相談を見る →</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <section id="store" class="hero" aria-labelledby="hero-title">
+  <section class="hero" aria-labelledby="hero-title">
     <div class="shell hero-grid">
       <div class="hero-copy">
         <p class="label">小さなお店のAI自動化</p>
@@ -125,35 +125,57 @@ const faqs = [
 
   <section id="service" class="section manual" aria-labelledby="manual-title">
     <div class="shell section-heading">
-      <p class="label">残っている手作業</p>
+      <p class="label">お手伝いできること</p>
       <div>
-        <h2 id="manual-title">こんな仕事が、閉店後まで残っていませんか。</h2>
-        <p class="intro">必要な仕事ではあっても、店長が毎回手でやる必要はないかもしれません。</p>
+        <h2 id="manual-title">毎月の手作業を、こんな形に変えます。</h2>
+        <p class="intro">新しい大きなシステムを入れるのではなく、いま使っている道具を生かすところから考えます。</p>
       </div>
     </div>
     <div class="shell ruled-list">
       {manualTasks.map((task, index) => (
-        <div class="ruled-row"><span>{String(index + 1).padStart(2, '0')}</span><p>{task}</p></div>
+        <div class="ruled-row">
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <p>{task.problem}</p>
+          <i aria-hidden="true">→</i>
+          <strong>{task.support}</strong>
+        </div>
       ))}
     </div>
   </section>
 
-  <section class="section process" aria-labelledby="process-title">
-    <div class="shell">
-      <div class="compact-heading">
-        <p class="label">進め方</p>
-        <h2 id="process-title">
-          <span class="desktop-title">まず、一つだけつくります。</span>
-          <span class="mobile-title">まず、一つだけ<br />つくります。</span>
-        </h2>
-        <p>Excelやスプレッドシートなど、いま使っているものをできるだけ生かします。</p>
+  <section class="section practice" aria-labelledby="practice-title">
+    <div class="shell practice-grid">
+      <div>
+        <p class="label">まず、自分の仕事で使っています</p>
+        <h2 id="practice-title">AIを知っているだけでなく、仕事の中で使っています。</h2>
       </div>
-      <div class="process-list">
-        {processSteps.map((step) => (
-          <article><span>{step.number}</span><h3>{step.title}</h3><p>{step.body}</p></article>
+      <div class="practice-copy">
+        <p>情報を集める。内容を整理する。資料やレポートの下書きをつくる。繰り返す作業を自動化する。自分の業務で試し、うまくいかなかった点も直しながら使っています。</p>
+        <div class="practice-list" aria-label="AI活用の実践内容">
+          {practice.map((item) => (
+            <div class="practice-row"><strong>{item.title}</strong><span>{item.body}</span></div>
+          ))}
+        </div>
+        <p>一般的な機能の説明ではなく、相談する方の仕事に置き換えて考えます。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section note-proof" aria-labelledby="note-proof-title">
+    <div class="shell note-proof-grid">
+      <div>
+        <p class="label">実践記録</p>
+        <h2 id="note-proof-title">試したことは、noteに残しています。</h2>
+        <p>つくった仕組みや、考えたことを途中経過も含めて書いています。</p>
+      </div>
+      <div class="article-list">
+        {noteArticles.map((article) => (
+          <a href={article.href} target="_blank" rel="noreferrer">
+            <span>{article.tag}</span><strong>{article.title}</strong><i aria-hidden="true">↗</i>
+          </a>
         ))}
+        <a class="all-articles" href="https://note.com/pon_localization" target="_blank" rel="noreferrer">noteの記事をすべて見る ↗</a>
       </div>
-      <p class="honesty-note">事業者向けの支援は立ち上げ段階で、公開できる導入事例はまだありません。まずは仕事を伺い、小さな試作から始めます。</p>
     </div>
   </section>
 
@@ -200,6 +222,22 @@ const faqs = [
     </div>
   </section>
 
+  <section class="section process" aria-labelledby="process-title">
+    <div class="shell">
+      <div class="compact-heading">
+        <p class="label">進め方</p>
+        <h2 id="process-title">まず、話を聞くところから。</h2>
+        <p>相談後、できることと費用をご説明します。内容に納得いただいた場合だけ、制作へ進みます。</p>
+      </div>
+      <div class="process-list">
+        {processSteps.map((step) => (
+          <article><span>{step.number}</span><h3>{step.title}</h3><p>{step.body}</p></article>
+        ))}
+      </div>
+      <p class="honesty-note">事業者向けの支援は立ち上げ段階で、公開できる導入事例はまだありません。まずは仕事を伺い、小さな試作から始めます。</p>
+    </div>
+  </section>
+
   <section class="section faq" aria-labelledby="faq-title">
     <div class="shell faq-grid">
       <div><p class="label">相談の前に</p><h2 id="faq-title">よく聞かれること</h2></div>
@@ -218,8 +256,9 @@ const faqs = [
         <span class="desktop-title">まずは、無料相談から。</span>
         <span class="mobile-title">まずは、<br />無料相談から。</span>
       </h2>
-      <p>何を自動化できるか決まっていなくても大丈夫です。「毎回これが面倒」という作業を教えてください。機密情報の入力は必要ありません。</p>
+      <p>何を自動化できるか決まっていなくても大丈夫です。「毎回これが面倒」という作業を、話せる範囲で教えてください。</p>
       <a class="button primary-button" href="https://docs.google.com/forms/d/e/1FAIpQLSewdmS_pSjJh0LF-KO2BsjW0myrnp2NB22J7Ia7mBuuTGvjnw/viewform?usp=publish-editor" target="_blank" rel="noreferrer">無料相談を申し込む ↗</a>
+      <small>Googleフォームが開きます。仕事の内容は、話せる範囲だけで構いません。</small>
     </div>
   </section>
 
@@ -245,24 +284,6 @@ const faqs = [
   .primary-button:hover { background: #a93c25; }
   .text-link { display: inline-flex; color: #19384c; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
 
-  .audience-gateway { display: flex; min-height: 720px; align-items: center; padding: 132px 0 76px; background: #f4f0e6; }
-  .gateway-inner { max-width: 1000px; }
-  .gateway-inner > h1 { max-width: 760px; margin-bottom: 20px; }
-  .gateway-lead { max-width: 680px; margin-bottom: 40px; color: #575d58; font-size: 17px; }
-  .audience-options { display: grid; grid-template-columns: repeat(2, 1fr); border: 1px solid #19384c; }
-  .audience-option { display: flex; min-height: 300px; flex-direction: column; padding: 34px 38px 30px; color: inherit; text-decoration: none; transition: background-color .2s ease, color .2s ease; }
-  .audience-option + .audience-option { border-left: 1px solid #19384c; }
-  .business-option { background: #19384c; color: #fffdf8; }
-  .business-option:hover { background: #244a62; }
-  .personal-option { background: #fffdf8; }
-  .personal-option:hover { background: #eee9de; }
-  .option-label { margin-bottom: 24px; color: #c94f32; font-size: 12px; font-weight: 700; letter-spacing: .06em; }
-  .business-option .option-label { color: #ef9d87; }
-  .audience-option strong { font-family: "Zen Old Mincho", serif; font-size: 27px; font-weight: 600; line-height: 1.55; letter-spacing: -.025em; }
-  .audience-option p { margin: 18px 0 28px; color: #575d58; font-size: 13px; line-height: 1.8; }
-  .business-option p { color: rgba(255,253,248,.8); }
-  .option-link { margin-top: auto; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
-
   .hero { display: flex; min-height: 750px; align-items: center; padding: 118px 0 74px; background: #fffdf8; }
   .hero-grid { display: grid; grid-template-columns: 58fr 42fr; gap: 64px; align-items: center; }
   .hero-lead { max-width: 590px; margin-bottom: 36px; color: #4f5551; font-size: 17px; }
@@ -277,17 +298,38 @@ const faqs = [
   .intro { max-width: 440px; margin-bottom: 6px; color: #575d58; }
   .manual { background: #f4f0e6; }
   .ruled-list { margin-top: 62px; border-top: 1px solid #cfc8ba; }
-  .ruled-row { display: grid; grid-template-columns: 105px 1fr; gap: 26px; align-items: start; padding: 25px 0; border-bottom: 1px solid #cfc8ba; }
+  .ruled-row { display: grid; grid-template-columns: 70px 1fr 30px 1fr; gap: 22px; align-items: center; padding: 25px 0; border-bottom: 1px solid #cfc8ba; }
   .ruled-row span { padding-top: 4px; color: #c94f32; font-size: 12px; font-weight: 700; }
-  .ruled-row p { margin: 0; font-size: 19px; }
+  .ruled-row p { margin: 0; font-size: 16px; }
+  .ruled-row i { color: #c94f32; font-size: 15px; font-style: normal; text-align: center; }
+  .ruled-row strong { color: #19384c; font-size: 15px; line-height: 1.8; }
+
+  .practice { background: #fffdf8; }
+  .practice-grid { display: grid; grid-template-columns: .92fr 1.08fr; gap: 100px; }
+  .practice-copy > p { color: #575d58; }
+  .practice-list { margin: 34px 0; border-top: 1px solid #cfc8ba; }
+  .practice-row { display: grid; grid-template-columns: 110px 1fr; gap: 22px; padding: 16px 0; border-bottom: 1px solid #cfc8ba; }
+  .practice-row strong { color: #c94f32; font-size: 13px; }
+  .practice-row span { color: #575d58; font-size: 13px; line-height: 1.7; }
+
+  .note-proof { background: #f4f0e6; }
+  .note-proof-grid { display: grid; grid-template-columns: .82fr 1.18fr; gap: 100px; }
+  .note-proof-grid > div:first-child > p:last-child { max-width: 420px; margin-top: 26px; color: #575d58; }
+  .article-list { border-top: 1px solid #cfc8ba; }
+  .article-list > a { display: grid; grid-template-columns: 155px 1fr 20px; gap: 22px; align-items: center; padding: 20px 0; border-bottom: 1px solid #cfc8ba; color: #19384c; text-decoration: none; }
+  .article-list > a:hover strong { color: #c94f32; }
+  .article-list span { color: #737873; font-size: 11px; line-height: 1.6; }
+  .article-list strong { font-size: 14px; line-height: 1.75; transition: color .2s ease; }
+  .article-list i { color: #c94f32; font-style: normal; }
+  .article-list .all-articles { display: inline-flex; padding-top: 22px; border: 0; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
 
   .compact-heading { display: grid; grid-template-columns: 210px 1fr .9fr; gap: 56px; align-items: end; }
   .compact-heading .label { align-self: start; }
   .compact-heading > p:last-child { margin-bottom: 5px; color: #575d58; }
 
-  .process { background: #fffdf8; }
-  .process-list { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 62px; border-top: 1px solid #cfc8ba; border-bottom: 1px solid #cfc8ba; }
-  .process-list article { min-height: 205px; padding: 28px 34px; border-right: 1px solid #cfc8ba; }
+  .process { background: #f4f0e6; }
+  .process-list { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 62px; border-top: 1px solid #cfc8ba; border-bottom: 1px solid #cfc8ba; }
+  .process-list article { min-height: 225px; padding: 28px 27px; border-right: 1px solid #cfc8ba; }
   .process-list article:first-child { padding-left: 0; }
   .process-list article:last-child { border-right: 0; padding-right: 0; }
   .process-list span { color: #c94f32; font-size: 11px; font-weight: 700; }
@@ -295,7 +337,7 @@ const faqs = [
   .process-list p { margin: 0; color: #575d58; font-size: 14px; }
   .honesty-note { max-width: 760px; margin: 30px 0 0 auto; border-left: 2px solid #cfc8ba; padding-left: 20px; color: #737873; font-size: 12px; line-height: 1.8; }
 
-  .case { background: #f4f0e6; }
+  .case { background: #fffdf8; }
   .case-grid { display: grid; grid-template-columns: 7fr 5fr; gap: 68px; align-items: center; }
   .case-image { display: block; width: 100%; border: 1px solid #19384c; color: inherit; text-decoration: none; }
   .case-image img { display: block; width: 100%; height: auto; }
@@ -332,8 +374,7 @@ const faqs = [
   @media (max-width: 900px) {
     .shell { width: min(720px, calc(100% - 40px)); }
     .section { padding: 80px 0; }
-    .audience-gateway { min-height: auto; padding: 116px 0 72px; }
-    .hero-grid, .section-heading, .case-grid, .about-grid, .faq-grid { grid-template-columns: 1fr; gap: 44px; }
+    .hero-grid, .section-heading, .practice-grid, .note-proof-grid, .case-grid, .about-grid, .faq-grid { grid-template-columns: 1fr; gap: 44px; }
     .section-heading > div, .compact-heading { grid-template-columns: 1fr; gap: 24px; }
     .process-list article { padding: 28px 24px; }
     .contact-inner { max-width: 720px; margin: 0 auto; }
@@ -348,30 +389,32 @@ const faqs = [
     .desktop-only { display: none; }
     .desktop-title { display: none; }
     .mobile-title { display: inline; }
-    .audience-gateway { padding: 96px 0 52px; }
-    .gateway-inner > h1 { margin-bottom: 18px; }
-    .gateway-lead { margin-bottom: 30px; font-size: 15px; }
-    .audience-options { grid-template-columns: 1fr; }
-    .audience-option { min-height: 0; padding: 27px 24px 25px; }
-    .audience-option + .audience-option { border-top: 1px solid #19384c; border-left: 0; }
-    .option-label { margin-bottom: 15px; }
-    .audience-option strong { font-size: 22px; line-height: 1.5; }
-    .audience-option p { margin: 12px 0 20px; font-size: 12px; }
     .hero { min-height: auto; padding: 62px 0 70px; }
-    .hero-grid { display: flex; flex-direction: column; gap: 34px; }
-    .hero-portrait { order: 1; width: calc(100% + 40px); margin-left: -20px; }
+    .hero-grid { display: grid; gap: 24px; }
+    .hero-copy { display: contents; }
+    .hero-copy .label { order: 1; margin-bottom: -10px; }
+    .hero-copy h1 { order: 2; margin-bottom: 4px; }
+    .hero-portrait { order: 3; width: calc(100% + 40px); margin-left: -20px; }
     .hero-portrait img { aspect-ratio: 5 / 4; border-width: 0 0 1px; object-position: 50% 28%; }
     .hero-portrait figcaption { padding: 0 20px; }
-    .hero-copy { order: 2; }
-    .hero-copy .label { margin-bottom: 13px; }
-    .hero-lead { margin-bottom: 28px; font-size: 15px; }
-    .hero .button { width: 100%; }
-    .button-note { text-align: center; }
+    .hero-lead { order: 4; margin: 5px 0 2px; font-size: 15px; }
+    .hero .button { order: 5; width: 100%; }
+    .button-note { order: 6; margin-top: -10px; text-align: center; }
     .section-heading { gap: 25px; }
     .section-heading > div { gap: 22px; }
     .ruled-list { margin-top: 42px; }
-    .ruled-row { grid-template-columns: 42px 1fr; gap: 10px; padding: 21px 0; }
+    .ruled-row { grid-template-columns: 32px 1fr; gap: 8px 10px; padding: 21px 0; }
     .ruled-row p { font-size: 16px; }
+    .ruled-row span { grid-column: 1; grid-row: 1; }
+    .ruled-row p { grid-column: 2; grid-row: 1; }
+    .ruled-row i { grid-column: 1; grid-row: 2; }
+    .ruled-row strong { grid-column: 2; grid-row: 2; font-size: 14px; }
+    .practice-grid, .note-proof-grid { gap: 34px; }
+    .practice-row { grid-template-columns: 88px 1fr; gap: 12px; }
+    .article-list > a { grid-template-columns: 1fr 18px; gap: 8px 12px; }
+    .article-list span { grid-column: 1 / -1; }
+    .article-list strong { grid-column: 1; }
+    .article-list i { grid-column: 2; }
     .compact-heading { gap: 16px; }
     .compact-heading > p:last-child { margin-top: 6px; }
     .process-list { grid-template-columns: 1fr; margin-top: 42px; }
