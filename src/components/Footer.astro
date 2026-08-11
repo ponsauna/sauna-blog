@@ -2,19 +2,33 @@
 const year = new Date().getFullYear();
 ---
 
-<footer class="bg-gray-950 border-t border-white/10 mt-24">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="flex flex-col items-center gap-4">
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">🧖</span>
-        <span class="text-lg font-bold text-white tracking-wider">Sauna Pon Blog</span>
-      </div>
-      <p class="text-gray-500 text-sm text-center max-w-md">
-        全国のサウナ施設を巡り、本音のレビューをお届けするサウナブログ。
-      </p>
-      <p class="text-gray-600 text-xs mt-4">
-        &copy; {year} tsuyoshishirota.com All rights reserved.
-      </p>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <p class="name">城田 剛</p>
+      <p class="role">小さなお店のAI自動化</p>
     </div>
+    <div class="footer-links">
+      <a href="/blog">サウナブログ</a>
+      <a href="https://note.com/pon_localization" target="_blank" rel="noreferrer">note</a>
+      <a href="https://www.neppashi.com" target="_blank" rel="noreferrer">熱波師.com</a>
+    </div>
+    <p class="copyright">&copy; {year} Tsuyoshi Shirota</p>
   </div>
 </footer>
+
+<style>
+  .site-footer { border-top: 1px solid #d8d1c4; background: #f5f1e8; color: #202821; }
+  .footer-inner { display: grid; grid-template-columns: 1fr auto; width: min(1120px, calc(100% - 64px)); margin: 0 auto; padding: 52px 0; gap: 30px 60px; }
+  .name { margin: 0 0 7px; font-size: 17px; font-weight: 700; }
+  .role { margin: 0; color: #687169; font-size: 12px; }
+  .footer-links { display: flex; gap: 26px; align-items: start; }
+  .footer-links a { color: #465048; font-size: 12px; font-weight: 700; text-decoration: none; }
+  .footer-links a:hover { color: #b85f3d; }
+  .copyright { grid-column: 1 / -1; margin: 10px 0 0; color: #899089; font-size: 11px; }
+  @media (max-width: 720px) {
+    .footer-inner { grid-template-columns: 1fr; width: calc(100% - 40px); padding: 42px 0; }
+    .footer-links { flex-wrap: wrap; gap: 18px 24px; }
+    .copyright { grid-column: 1; }
+  }
+</style>

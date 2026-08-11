@@ -1,36 +1,31 @@
 ---
-const navLinks = [
-  { href: '/', label: 'HOME' },
-  { href: '/blog', label: 'BLOG' },
-];
-
 const currentPath = Astro.url.pathname;
+const onHome = currentPath === '/';
 ---
 
-<header class="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/10">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
-      <a href="/" class="flex items-center gap-2 group">
-        <img src="/favicon.jpg" alt="icon" class="w-8 h-8 rounded-full object-cover" />
-        <span class="text-lg font-bold text-white tracking-wider group-hover:text-amber-400 transition-colors">
-          Sauna Pon Blog
-        </span>
-      </a>
-      <nav class="flex gap-8">
-        {navLinks.map(({ href, label }) => (
-          <a
-            href={href}
-            class:list={[
-              'text-xs font-semibold tracking-widest transition-colors',
-              currentPath === href
-                ? 'text-amber-400'
-                : 'text-gray-400 hover:text-white',
-            ]}
-          >
-            {label}
-          </a>
-        ))}
-      </nav>
-    </div>
+<header class="site-header">
+  <div class="header-inner">
+    <nav aria-label="メインナビゲーション">
+      <a href={onHome ? '#service' : '/#service'}>できること</a>
+      <a href={onHome ? '#case' : '/#case'}>事例</a>
+      <a href="https://note.com/pon_localization" target="_blank" rel="noreferrer">note</a>
+      <a href="/blog">サウナブログ</a>
+      <a class="contact-link" href={onHome ? '#contact' : '/#contact'}>相談する</a>
+    </nav>
   </div>
 </header>
+
+<style>
+  .site-header { position: fixed; inset: 0 0 auto; z-index: 50; border-bottom: 1px solid rgba(41,75,55,.14); background: rgba(255,253,248,.95); }
+  .header-inner { display: flex; width: min(1120px, calc(100% - 64px)); height: 72px; margin: 0 auto; align-items: center; justify-content: flex-end; }
+  nav { display: flex; align-items: center; gap: 30px; }
+  nav a { color: #465048; font-size: 12px; font-weight: 700; text-decoration: none; }
+  nav a:hover { color: #b85f3d; }
+  .contact-link { min-height: 42px; display: inline-flex; align-items: center; border: 1px solid #294b37; border-radius: 5px; padding: 0 18px; color: #294b37; }
+  @media (max-width: 720px) {
+    .header-inner { width: calc(100% - 40px); height: 62px; }
+    nav a:not(.contact-link) { display: none; }
+    nav { gap: 0; }
+    .contact-link { min-height: 40px; padding: 0 16px; }
+  }
+</style>

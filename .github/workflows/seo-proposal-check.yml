@@ -29,3 +29,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Test SEO automation
+        run: npm run test:seo
+
+      - name: Validate page metadata
+        run: npm run test:meta

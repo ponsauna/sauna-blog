@@ -47,7 +47,7 @@ export default async function handler(req, res) {
         `images: ${saunaName}のサムネを追加`);
     }
 
-    const blogUrl = `https://tsuyoshishirota.com/blog/${date}-${slug}/`;
+    const blogUrl = `https://tsuyoshishirota.com/blog/${date}-${slug}`;
     return res.status(200).json({ success: true, blogUrl });
   } catch (err) {
     console.error('publish-post:', err);

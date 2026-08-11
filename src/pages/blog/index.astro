@@ -4,15 +4,44 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BlogCard from '../../components/BlogCard.astro';
+import {
+  BLOG_INDEX_META_DESCRIPTION,
+  BLOG_INDEX_META_TITLE,
+  SITE_ORIGIN,
+} from '../../../lib/site-metadata.js';
 
 const posts = (await getCollection('blog'))
   .filter((post) => !post.data.noindex)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const categories = [...new Set(posts.map((post) => post.data.category))];
+const blogIndexLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: BLOG_INDEX_META_TITLE,
+  description: BLOG_INDEX_META_DESCRIPTION,
+  url: `${SITE_ORIGIN}/blog`,
+  inLanguage: 'ja-JP',
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: posts.map((post, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: post.data.title,
+      url: `${SITE_ORIGIN}/blog/${post.slug}`,
+    })),
+  },
+};
 ---
 
-<BaseLayout title="ブログ一覧 | Sauna Pon Blog" description="すべてのブログ記事">
+<BaseLayout
+  title={BLOG_INDEX_META_TITLE}
+  description={BLOG_INDEX_META_DESCRIPTION}
+  canonicalUrl={`${SITE_ORIGIN}/blog`}
+  ogImage={posts[0]?.data.coverImage}
+  ogImageAlt="城田剛のサウナブログ"
+  jsonLd={blogIndexLd}
+>
   <Header slot="header" />
 
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -9,6 +9,11 @@ import {
   validateProposedTitle,
   verifySlackSignature,
 } from '../lib/seo-automation.js';
+import {
+  buildMetaTitle,
+  buildSaunaDraftTitle,
+  normalizeMetaDescription,
+} from '../lib/site-metadata.js';
 
 const article = `---
 title: "サウナ施設の利用体験"
@@ -55,4 +60,21 @@ test('Slack署名を検証する', () => {
 test('Slackメッセージから承認対象PR番号を取得する', () => {
   assert.equal(prNumberFromSlackMessage({ blocks: [{ block_id: 'seo_pr_42' }] }), 42);
   assert.equal(prNumberFromSlackMessage({ blocks: [{ block_id: 'other' }] }), null);
+});
+
+test('記事タイトルから70文字以内のmeta titleを生成する', () => {
+  assert.equal(buildMetaTitle('サウナ施設の利用体験'), 'サウナ施設の利用体験｜城田 剛');
+  assert.equal(buildMetaTitle('サウナ施設の利用体験｜城田 剛'), 'サウナ施設の利用体験｜城田 剛');
+  assert.ok(buildMetaTitle('あ'.repeat(70)).length <= 70);
+});
+
+test('meta descriptionの空白と最大文字数を整える', () => {
+  assert.equal(normalizeMetaDescription('施設の特徴を\n  紹介します。'), '施設の特徴を 紹介します。');
+  assert.equal(normalizeMetaDescription('あ'.repeat(170)).length, 160);
+});
+
+test('ブログ自動生成の初期タイトルに誇張表現を含めない', () => {
+  const title = buildSaunaDraftTitle('テストサウナ');
+  assert.equal(title, 'テストサウナ｜サウナ・水風呂・外気浴の体験レビュー');
+  assert.doesNotMatch(title, /最新|完全|徹底解説|No\.?1/i);
 });

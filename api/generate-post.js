@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { buildSaunaDraftTitle } from '../lib/site-metadata.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -10,6 +11,7 @@ export default async function handler(req, res) {
     if (!saunaName?.trim()) return res.status(400).json({ error: '施設名が必要です' });
 
     const date = visitDate || new Date().toISOString().split('T')[0];
+    const draftTitle = buildSaunaDraftTitle(saunaName);
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY?.trim() });
 
     const photoInfo = photoCaptions.length > 0
@@ -29,11 +31,11 @@ ${saunaIkitaiUrl ? `まず「${saunaIkitaiUrl}」のページをWeb検索で参�
 【必須フォーマット】以下の構造でMarkdownを生成してください：
 
 ---
-title: "${saunaName}の魅力を徹底解説！【サウナレビュー】"
+title: "${draftTitle}"
 date: ${date}
 category: "サウナレビュー"
 coverImage: "/images/posts/SLUG/cover.jpg"
-excerpt: "（${saunaName}の特徴を1文で）"
+excerpt: "（${saunaName}の特徴と利用体験を、確認できた事実だけで70〜120文字にまとめる）"
 rating: 5
 facilityName: "${saunaName}"
 ---

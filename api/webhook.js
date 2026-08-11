@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import Anthropic from '@anthropic-ai/sdk';
+import { buildSaunaDraftTitle } from '../lib/site-metadata.js';
 
 export default async function handler(req, res) {
   // URLクエリパラメータを手動でパース
@@ -72,6 +73,7 @@ export default async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth: authClient });
 
     const date = visitDate || new Date().toISOString().split('T')[0];
+    const draftTitle = buildSaunaDraftTitle(saunaName);
 
     // ── 1. Driveフォルダから最新のファイルを取得 ──────────────────────
     const filesRes = await drive.files.list({
@@ -180,11 +182,11 @@ export default async function handler(req, res) {
 【重要】以下のフォーマットを厳守してください。frontmatterのdateはYYYY-MM-DD形式にしてください：
 
 ---
-title: "${saunaName}の魅力を徹底解説【サウナレビュー】"
+title: "${draftTitle}"
 date: ${date}
 category: "サウナレビュー"
 coverImage: "/images/default-sauna.jpg"
-excerpt: "（${saunaName}の特徴を1文で）"
+excerpt: "（${saunaName}の特徴と利用体験を、確認できた事実だけで70〜120文字にまとめる）"
 ---
 
 ## 基本情報

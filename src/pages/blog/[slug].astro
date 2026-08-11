@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import { OWNER_NAME, SITE_ORIGIN, buildMetaTitle } from '../../../lib/site-metadata.js';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -27,7 +28,7 @@ const relatedPosts = (() => {
 
 const tocHeadings = headings.filter(h => h.depth === 2);
 
-const siteUrl = 'https://tsuyoshishirota.com';
+const siteUrl = SITE_ORIGIN;
 const pageUrl = `${siteUrl}/blog/${post.slug}`;
 const ogImage = post.data.coverImage.startsWith('http')
   ? post.data.coverImage
@@ -48,14 +49,22 @@ const jsonLd = {
   url: pageUrl,
   datePublished: post.data.date.toISOString(),
   ...(post.data.updatedDate ? { dateModified: post.data.updatedDate.toISOString() } : {}),
+  inLanguage: 'ja-JP',
   author: {
     '@type': 'Person',
-    name: 'Tsuyoshi Shirota',
+    name: OWNER_NAME,
+    alternateName: 'Tsuyoshi Shirota',
+    url: siteUrl,
   },
   publisher: {
-    '@type': 'Organization',
-    name: 'tsuyoshishirota.com',
+    '@type': 'Person',
+    name: OWNER_NAME,
     url: siteUrl,
+  },
+  isPartOf: {
+    '@type': 'Blog',
+    name: 'サウナブログ',
+    url: `${siteUrl}/blog`,
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
@@ -75,16 +84,18 @@ const breadcrumbLd = {
 ---
 
 <BaseLayout
-  title={post.data.title}
+  title={buildMetaTitle(post.data.title)}
   description={post.data.excerpt}
   ogImage={post.data.coverImage}
+  ogImageAlt={`${post.data.facilityName || post.data.title}のサウナ施設写真`}
   ogType="article"
   canonicalUrl={pageUrl}
   publishedDate={post.data.date.toISOString()}
-  jsonLd={jsonLd}
+  modifiedDate={(post.data.updatedDate || post.data.date).toISOString()}
+  articleSection={post.data.category}
+  jsonLd={[jsonLd, breadcrumbLd]}
   noindex={post.data.noindex}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbLd)} slot="head" />
   <Header slot="header" />
 
   <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
