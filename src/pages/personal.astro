@@ -94,8 +94,9 @@ const faqs = [
       <div class="hero-copy">
         <p class="label">会社員のためのAI仕事相談</p>
         <h1 id="hero-title">
-          <span class="desktop-title">自分の仕事に合う、<br />AIの使い方を一緒に考えます。</span>
-          <span class="mobile-title">自分の仕事に合う<br />AIの使い方を<br />一緒に考えます。</span>
+          <span class="title-line">自分の仕事に合う、</span>
+          <span class="title-line">AIの使い方を</span>
+          <span class="title-line">一緒に考えます。</span>
         </h1>
         <p class="hero-lead">資料作成、情報整理、定例レポート。ChatGPTは触っているけれど、自分の仕事でどう使えばいいか分からない。そんな方の業務を伺い、何から試すとよいかをアドバイスします。</p>
         <a class="button primary-button" href="#contact">まずは無料で相談する</a>
@@ -112,7 +113,11 @@ const faqs = [
     <div class="shell section-heading">
       <p class="label">こんな悩みへ</p>
       <div>
-        <h2 id="concerns-title">AIを使いたい。でも、自分の仕事での使い方が分からない。</h2>
+        <h2 id="concerns-title">
+          <span class="title-line">AIを使いたい。</span>
+          <span class="title-line">でも、自分の仕事での</span>
+          <span class="title-line">使い方が分からない。</span>
+        </h2>
         <p class="intro">知りたいのは一般的な機能ではなく、「自分のこの仕事に、どう使えるか」ではないでしょうか。</p>
       </div>
     </div>
@@ -127,7 +132,11 @@ const faqs = [
     <div class="shell outcomes-grid">
       <div>
         <p class="label">相談後に持ち帰れること</p>
-        <h2 id="outcomes-title">自分の仕事で、次に何を試すかが分かります。</h2>
+        <h2 id="outcomes-title">
+          <span class="title-line">自分の仕事で、</span>
+          <span class="title-line">次に何を試すかが</span>
+          <span class="title-line">分かります。</span>
+        </h2>
       </div>
       <div class="outcome-list">
         {outcomes.map((outcome, index) => (
@@ -142,8 +151,9 @@ const faqs = [
       <div>
         <p class="label light-label">城田自身のAI活用</p>
         <h2 id="about-title">
-          <span class="desktop-title">会社員として、AIを<br />業務改善に使っています。</span>
-          <span class="mobile-title">会社員として、<br />AIを業務改善に<br />使っています。</span>
+          <span class="title-line">会社員として、</span>
+          <span class="title-line">AIを業務改善に</span>
+          <span class="title-line">使っています。</span>
         </h2>
       </div>
       <div class="about-copy">
@@ -163,7 +173,10 @@ const faqs = [
     <div class="shell note-grid">
       <div>
         <p class="label">実践記録</p>
-        <h2 id="note-title">noteに、自動化の例をまとめています。</h2>
+        <h2 id="note-title">
+          <span class="title-line">自動化の例を、</span>
+          <span class="title-line">noteにまとめています。</span>
+        </h2>
       </div>
       <div class="note-copy">
         <p>仕事や個人プロジェクトでつくった、AI活用・自動化の仕組みを紹介しています。</p>
@@ -176,7 +189,11 @@ const faqs = [
     <div class="shell">
       <div class="compact-heading">
         <p class="label">無料相談の進め方</p>
-        <h2 id="consultation-title">あなたの業務に合わせて、使いどころを整理します。</h2>
+        <h2 id="consultation-title">
+          <span class="title-line">業務に合う、</span>
+          <span class="title-line">AIの使いどころを</span>
+          <span class="title-line">整理します。</span>
+        </h2>
         <p>ツールありきではなく、いま困っている作業から考えます。</p>
       </div>
       <div class="step-list">
@@ -203,8 +220,16 @@ const faqs = [
     <div class="shell contact-inner">
       <p class="label">無料相談</p>
       <h2 id="contact-title">
-        <span class="desktop-title">自分の仕事で、何から試すかを<br />一緒に考えましょう。</span>
-        <span class="mobile-title">自分の仕事で、<br />何から試すかを<br />一緒に考えましょう。</span>
+        <span class="desktop-title">
+          <span class="title-line">自分の仕事で、何から試すかを</span>
+          <span class="title-line">一緒に考えましょう。</span>
+        </span>
+        <span class="mobile-title">
+          <span class="title-line">自分の仕事で、</span>
+          <span class="title-line">何から試すかを</span>
+          <span class="title-line">一緒に</span>
+          <span class="title-line">考えましょう。</span>
+        </span>
       </h2>
       <p>まだ使いたいツールや自動化したい内容が決まっていなくても大丈夫です。困っている作業を、話せる範囲で教えてください。</p>
       <a class="button primary-button" href={formUrl} target="_blank" rel="noreferrer">無料相談を申し込む ↗</a>
@@ -222,7 +247,15 @@ const faqs = [
   .shell { width: min(1120px, calc(100% - 64px)); margin: 0 auto; }
   .section { padding: 104px 0; }
   h1, h2, h3, p { margin-top: 0; }
-  h1, h2 { font-family: "Zen Old Mincho", serif; color: #19384c; font-weight: 600; text-wrap: balance; }
+  h1, h2 {
+    font-family: "Zen Old Mincho", serif;
+    color: #19384c;
+    font-weight: 600;
+    line-break: strict;
+    overflow-wrap: normal;
+    word-break: normal;
+    word-break: auto-phrase;
+  }
   h1 { margin-bottom: 30px; font-size: clamp(44px, 4.15vw, 54px); line-height: 1.38; letter-spacing: -.035em; }
   h2 { margin-bottom: 0; font-size: clamp(34px, 3.4vw, 42px); line-height: 1.46; letter-spacing: -.03em; }
   h3 { font-size: 19px; line-height: 1.65; }
@@ -234,6 +267,7 @@ const faqs = [
   .primary-button:hover { background: #a93c25; }
   .text-link { display: inline-flex; color: #19384c; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
   .mobile-title { display: none; }
+  .title-line { display: block; white-space: nowrap; }
 
   .hero { display: flex; min-height: 750px; align-items: center; padding: 118px 0 74px; background: #fffdf8; }
   .hero-grid { display: grid; grid-template-columns: 58fr 42fr; gap: 64px; align-items: center; }
@@ -300,6 +334,10 @@ const faqs = [
   .contact-inner { max-width: 780px; margin: 0 auto; }
   .contact h2 + p { max-width: 650px; margin: 28px 0 32px; color: #575d58; }
   .contact small { display: block; margin-top: 14px; color: #737873; font-size: 11px; line-height: 1.7; }
+
+  @media (max-width: 1050px) {
+    .note-grid { grid-template-columns: 1fr; gap: 44px; }
+  }
 
   @media (max-width: 900px) {
     .shell { width: min(720px, calc(100% - 40px)); }

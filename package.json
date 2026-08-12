@@ -8,9 +8,10 @@
     "build": "astro build",
     "preview": "astro preview",
     "test:adsense": "node --test tests/adsense-scope.test.mjs",
+    "test:headings": "node --test tests/japanese-heading-wrap.test.mjs",
     "test:seo": "node --test tests/seo-automation.test.mjs",
     "test:meta": "node scripts/validate-meta.mjs",
-    "check": "npm run build && npm run test:adsense && npm run test:seo && npm run test:meta",
+    "check": "npm run build && npm run test:adsense && npm run test:headings && npm run test:seo && npm run test:meta",
     "astro": "astro"
   },
   "dependencies": {
