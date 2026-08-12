@@ -88,8 +88,14 @@ const faqs = [
       <div class="hero-copy">
         <p class="label">小さなお店のAI自動化</p>
         <h1 id="hero-title">
-          <span class="desktop-title">閉店後まで続く仕事を、減らす。</span>
-          <span class="mobile-title">閉店後まで続く<br />仕事を、減らす。</span>
+          <span class="desktop-title">
+            <span class="title-line">閉店後まで続く</span>
+            <span class="title-line">仕事を、減らす。</span>
+          </span>
+          <span class="mobile-title">
+            <span class="title-line">閉店後まで続く</span>
+            <span class="title-line">仕事を、減らす。</span>
+          </span>
         </h1>
         <p class="hero-lead">
           店舗ごとの売上をまとめる。予約情報を別の表へ写す。月次報告をつくる。<br class="desktop-only" />
@@ -131,7 +137,16 @@ const faqs = [
     <div class="shell section-heading">
       <p class="label">お手伝いできること</p>
       <div>
-        <h2 id="manual-title">毎月の手作業を、こんな形に変えます。</h2>
+        <h2 id="manual-title">
+          <span class="desktop-title">
+            <span class="title-line">毎月の手作業を、</span>
+            <span class="title-line">こんな形に変えます。</span>
+          </span>
+          <span class="mobile-title">
+            <span class="title-line">毎月の手作業を、</span>
+            <span class="title-line">こんな形に変えます。</span>
+          </span>
+        </h2>
         <p class="intro">新しい大きなシステムを入れるのではなく、いま使っている道具を生かすところから考えます。</p>
       </div>
     </div>
@@ -185,7 +200,16 @@ const faqs = [
     <div class="shell">
       <div class="compact-heading">
         <p class="label">進め方</p>
-        <h2 id="process-title">まず、話を聞くところから。</h2>
+        <h2 id="process-title">
+          <span class="desktop-title">
+            <span class="title-line">まず、話を聞く</span>
+            <span class="title-line">ところから。</span>
+          </span>
+          <span class="mobile-title">
+            <span class="title-line">まず、</span>
+            <span class="title-line">話を聞くところから。</span>
+          </span>
+        </h2>
         <p>相談後、できることと費用をご説明します。内容に納得いただいた場合だけ、制作へ進みます。</p>
       </div>
       <div class="process-list">
@@ -257,6 +281,7 @@ const faqs = [
   .hero-portrait img { display: block; width: 100%; aspect-ratio: 4 / 5; border: 1px solid #19384c; object-fit: cover; object-position: 50% 34%; }
   .hero-portrait figcaption { margin-top: 10px; color: #737873; font-size: 11px; line-height: 1.6; }
   .mobile-title { display: none; }
+  .title-line { display: block; white-space: nowrap; }
 
   .section-heading { display: grid; grid-template-columns: 220px 1fr; gap: 72px; }
   .section-heading > div { display: grid; grid-template-columns: 1fr .75fr; gap: 64px; align-items: end; }
